@@ -1,0 +1,2 @@
+Mangafox
+MangaTown
