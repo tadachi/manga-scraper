@@ -7,6 +7,9 @@
 
 var request = require('request');
 var cheerio = require('cheerio');
+var promise = require('promise');
+var q = require('q');
+
 //
 //var alpha_list =
 //    [
@@ -34,15 +37,24 @@ http://mangafox.me/manga/azure_dream/
 ...
 */
 
-//request('http://mangafox.me/manga/', function (error, response, html) {
-//    if (!error && response.statusCode == 200) {
-//        var $ = cheerio.load(html);
-//
-//        $('#idx_a li a').each(function(i, elem) {
-//            console.log($(this).attr('href'));
-//        });
-//    }
-//});
+request('http://mangafox.me/manga/', function (error, response, html) {
+    var urls = [];
+    if (!error && response.statusCode == 200) {
+        var $ = cheerio.load(html);
+
+        $('#idx_a li a').each(function(i, elem) {
+            urls.push($(this).attr('href'))
+        });
+        return urls;
+    }
+});
+
+/**
+ *
+ * @constructor
+ */
+function MangaFoxScraper() { }
+MangaFoxScraper.prototype = Object.create(MangaFoxScraper.prototype);
 
 /*
 ...
@@ -58,14 +70,81 @@ http://mangafox.me/manga/hack_link/v01/c006.5/1.html
 ...
 */
 
-request('http://mangafox.me/manga/hack_link/', function (error, response, html) {
+/**
+ *
+ * @param mangafox_url
+ * @param callback
+ * @callback urls;
+ */
+MangaFoxScraper.prototype.getChapterUrlsPromise = function(mangafox_url){
+
+    var promise = new Promise(function(resolve, reject) {
+        var execute = function(error, response, html) {
+            var urls = [];
+            if (!error && response.statusCode == 200) {
+                var $ = cheerio.load(html);
+
+                $('.tips').each(function(i, elem) {
+                    urls.push($(this).attr('href'))
+                });
+                resolve(urls);
+            } else {
+                reject(error);
+            }
+        };
+
+        request(mangafox_url, execute);
+    });
+
+    return promise;
+    
+};
+
+
+
+/*
+http://a.mfcdn.net/store/manga/894/01-006.5/compressed/fpantsuki_link_c007_p01.jpg
+http://a.mfcdn.net/store/manga/894/01-006.5/compressed/fpantsuki_link_c007_p02.jpg
+http://a.mfcdn.net/store/manga/894/01-006.5/compressed/fpantsuki_link_c007_p03.jpg
+*/
+
+/*
+ 1
+ 2
+ 3
+ 4
+ 5
+ ...
+ 15
+*/
+var test = function (error, response, html) {
+    var page_numbers = [];
+    var temp_numbers = [];
     if (!error && response.statusCode == 200) {
         var $ = cheerio.load(html);
 
-        // Better method
-        $('.tips').each(function(i, elem) {
-            console.log($(this).attr('href'));
+        $('.m option').each(function(i, elem) {
+            temp_numbers.push($(this).attr('value'))
         });
-    }
-});
 
+        for (var i = 0; i < (temp_numbers.length/2-1); i++) {
+            page_numbers.push(temp_numbers[i]);
+        }
+
+        page_numbers;
+    }
+};
+
+request('http://mangafox.me/manga/hack_link/v01/c006.5/1.html', test);
+
+
+var scraper1 = new MangaFoxScraper();
+
+var promises = [];
+promises.push(scraper1.getChapterUrlsPromise("http://mangafox.me/manga/azure_dream/"));
+
+q.all(promises).then(
+    function(data) {
+        console.log(data);
+    }
+)
