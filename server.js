@@ -9,7 +9,8 @@ var request = require('request');
 var cheerio = require('cheerio');
 var promise = require('promise');
 var q = require('q');
-
+var URI = require('URIjs');
+var path = require('path');
 //
 //var alpha_list =
 //    [
@@ -53,7 +54,27 @@ request('http://mangafox.me/manga/', function (error, response, html) {
  *
  * @constructor
  */
-function MangaFoxScraper() { }
+var MangaFoxScraper = function() {
+    this.chapter_urls = null;
+    this.chapter_page_urls = null;
+}
+
+
+MangaFoxScraper.prototype = {
+    setChapterUrls:function(chapter_urls) {
+        this.chapter_urls = chapter_urls;
+    },
+    getChapterUrls:function() {
+        return this.chapter_urls;
+    },
+    setChapterPageUrls:function(chapter_page_urls) {
+        this.chapter_page_urls = chapter_page_urls;
+    },
+    getChapterPageUrls:function() {
+        return this.chapter_page_urls;
+    }
+};
+
 MangaFoxScraper.prototype = Object.create(MangaFoxScraper.prototype);
 
 /*
@@ -161,30 +182,57 @@ http://a.mfcdn.net/store/manga/5716/01-004.0/compressed/inostalgia_01.jpg
 */
 var scraper1 = new MangaFoxScraper();
 
-//var promises = [];
-//promises.push(scraper1.getChapterUrlsPromise("http://mangafox.me/manga/azure_dream/"));
-//promises.push(scraper1.getPageNumbersPromise("http://mangafox.me/manga/azure_dream/v01/c001/1.html"))
-//
-//q.all(promises).then(
-//    function(data) {
-//        console.log(data);
-//    }
-//)
-
 one = scraper1.getChapterUrlsPromise("http://mangafox.me/manga/azure_dream/");
 
-// Chapter urls.
+// First html page of chapters.
 one.then( function(urls)  {
-    console.log(urls);
+    var chapter_urls = [];
+    var chapter_page_urls = [];
+
+    urls = urls.sort(); // Sort urls before processing.
     var promises = [];
+
     urls.forEach( function(url) {
         promises.push(scraper1.getPageNumbersPromise(url));
     });
 
     // Page numbers for each chapters.
+    // promises and urls are the same length.
     q.all(promises).then(
-        function(data) {
-            console.log(data);
+        function(page_numbers) {
+            if (urls.length == page_numbers.length) {
+                for (var i = 0; i < page_numbers.length; i++) {
+                    var url = new URI(urls[i]); // ==> "http://mangafox.me/manga/azure_dream/v01/c001/1.html" ...
+
+                    // Set chapter urls.
+                    chapter_urls.push(path.dirname(url.toString()) + "/") // ==> http://mangafox.me/manga/azure_dream/v01/c007/ ...
+                }
+            } else {
+                throw ChaptersPagesNotEqualException("chapter_urls and chapter_page_numbers length not equal for this manga.")
+            }
+
+            var ext = ".html";
+            for (i = 0; i < chapter_urls.length; i++) { // chapter_urls.length == page_numbers.length
+                var chapter_pages = []
+                for (var e = 0; e < page_numbers[i].length; e++) {
+                    chapter_pages.push(chapter_urls[i] + page_numbers[i][e] + ext); // ==> http://mangafox.me/manga/azure_dream/v01/c001/1.html .. 2.html .. 3.html ..
+                }
+                chapter_page_urls.push(chapter_pages);
+            }
+
         }
-    )
+    ).finally(function() {
+        scraper1.setChapterUrls(chapter_urls);
+        scraper1.setChapterUrls(chapter_page_urls);
+
+        console.log(scraper1.getChapterUrls());
+    });
 });
+
+/*
+exceptions
+*/
+function ChaptersPagesNotEqualException(message) {
+    this.message = message;
+    this.name = "ChaptersPagesNotEqualException";
+}
