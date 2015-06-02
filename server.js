@@ -97,15 +97,19 @@ MangaFoxScraper.prototype.getChapterUrlsPromise = function(mangafox_url){
     });
 
     return promise;
-    
+
 };
 
 
 
 /*
-http://a.mfcdn.net/store/manga/894/01-006.5/compressed/fpantsuki_link_c007_p01.jpg
-http://a.mfcdn.net/store/manga/894/01-006.5/compressed/fpantsuki_link_c007_p02.jpg
-http://a.mfcdn.net/store/manga/894/01-006.5/compressed/fpantsuki_link_c007_p03.jpg
+'http://mangafox.me/manga/azure_dream/v01/c007/1.html',
+'http://mangafox.me/manga/azure_dream/v01/c006/1.html',
+'http://mangafox.me/manga/azure_dream/v01/c005/1.html',
+'http://mangafox.me/manga/azure_dream/v01/c004/1.html',
+'http://mangafox.me/manga/azure_dream/v01/c003/1.html',
+'http://mangafox.me/manga/azure_dream/v01/c002/1.html',
+'http://mangafox.me/manga/azure_dream/v01/c001/1.html'
 */
 
 /*
@@ -115,36 +119,72 @@ http://a.mfcdn.net/store/manga/894/01-006.5/compressed/fpantsuki_link_c007_p03.j
  4
  5
  ...
- 15
+ 38
 */
-var test = function (error, response, html) {
-    var page_numbers = [];
-    var temp_numbers = [];
-    if (!error && response.statusCode == 200) {
-        var $ = cheerio.load(html);
+MangaFoxScraper.prototype.getPageNumbersPromise = function(mangafox_chapter_url) {
+    var promise = new Promise(function(resolve, reject) {
+        var execute = function(error, response, html) {
+            var page_numbers = [];
+            var temp_numbers = [];
+            if (!error && response.statusCode == 200) {
+                var $ = cheerio.load(html);
 
-        $('.m option').each(function(i, elem) {
-            temp_numbers.push($(this).attr('value'))
-        });
+                $('.m option').each(function(i, elem) {
+                    temp_numbers.push($(this).attr('value'))
+                });
 
-        for (var i = 0; i < (temp_numbers.length/2-1); i++) {
-            page_numbers.push(temp_numbers[i]);
-        }
+                // Mangafox lists page numbers twitch on the top and bottom of image.
+                // You need to cut it in half and subtract by one taking into account comments page.
+                for (var i = 0; i < (temp_numbers.length/2-1); i++) { // -1 for the comments page.
+                    page_numbers.push(temp_numbers[i]);
+                }
 
-        page_numbers;
-    }
-};
+                resolve(page_numbers);
 
-request('http://mangafox.me/manga/hack_link/v01/c006.5/1.html', test);
+            } else {
+                reject(error);
+            }
+        };
 
+        request(mangafox_chapter_url, execute);
+    });
 
+    return promise;
+}
+
+/*
+http://a.mfcdn.net/store/manga/5716/01-001.0/compressed/ha_lapis_lazuli_blue_dream_03.jpg
+http://a.mfcdn.net/store/manga/5716/01-001.0/compressed/ha_lapis_lazuli_blue_dream_04.jpg
+
+http://a.mfcdn.net/store/manga/5716/01-004.0/compressed/ilililicious.jpg
+http://a.mfcdn.net/store/manga/5716/01-004.0/compressed/inostalgia_01.jpg
+*/
 var scraper1 = new MangaFoxScraper();
 
-var promises = [];
-promises.push(scraper1.getChapterUrlsPromise("http://mangafox.me/manga/azure_dream/"));
+//var promises = [];
+//promises.push(scraper1.getChapterUrlsPromise("http://mangafox.me/manga/azure_dream/"));
+//promises.push(scraper1.getPageNumbersPromise("http://mangafox.me/manga/azure_dream/v01/c001/1.html"))
+//
+//q.all(promises).then(
+//    function(data) {
+//        console.log(data);
+//    }
+//)
 
-q.all(promises).then(
-    function(data) {
-        console.log(data);
-    }
-)
+one = scraper1.getChapterUrlsPromise("http://mangafox.me/manga/azure_dream/");
+
+// Chapter urls.
+one.then( function(urls)  {
+    console.log(urls);
+    var promises = [];
+    urls.forEach( function(url) {
+        promises.push(scraper1.getPageNumbersPromise(url));
+    });
+
+    // Page numbers for each chapters.
+    q.all(promises).then(
+        function(data) {
+            console.log(data);
+        }
+    )
+});
