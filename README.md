@@ -1,3 +1,5 @@
+https://travis-ci.org/tadachi/manga-scraper.svg
+
 Mangafox
 MangaTown
 
