@@ -1,4 +1,4 @@
-![Travis Logo](https://travis-ci.org/tadachi/manga-scraper.svg "Travis Build")
+![Travis Logo](https://travis-ci.org/tadachi/manga-scraper.svg?branch=master "Travis Build")
 
 
 Mangafox  
@@ -31,4 +31,4 @@ a.mfcdn.net/store/manga/11421/02-004.0/compressed/o043.jpg
 a.mfcdn.net/store/manga/5716/01-001.0/compressed/ha_lapis_lazuli_blue_dream_00a.jpg <--- page 1  
 a.mfcdn.net/store/manga/5716/01-001.0/compressed/ha_lapis_lazuli_blue_dream_00c.jpg <--- page 2  
 ...  
-http://a.mfcdn.net/store/manga/5716/01-001.0/compressed/hyuri_hime_13_cover.jpg <--- page 38
+a.mfcdn.net/store/manga/5716/01-001.0/compressed/hyuri_hime_13_cover.jpg <--- page 38

@@ -51,6 +51,16 @@ http://mangafox.me/manga/azure_dream/
 
 /**
  *
+ * @param num
+ * @param digits
+ * @returns {string}
+ */
+function pad(num, digits) {
+    return ('000' + num).substr(-digits);
+}
+
+/**
+ *
  * @constructor
  */
 var MangaFoxScraper = function() {
@@ -91,23 +101,50 @@ MangaFoxScraper.prototype = {
 MangaFoxScraper.prototype = Object.create(MangaFoxScraper.prototype);
 
 /**
- * input: 'http://mangafox.me/manga/azure_dream/v01/c007/1.html'
+ * input: 'http://mangafox.me/manga/gto_paradise_lost/'
  * output:
  *
  * @param mangafox_url
  */
 MangaFoxScraper.prototype.getMangaNameFromUrl = function(mangafox_url) {
-    url = new URI(mangafox_url);
-    //console.log(url.pathname().split("/")[2]);
+    var url = URI(mangafox_url);
+    //console.log(url.pathname().split("/"));
     return url.pathname().split("/")[2];
-}
+};
 
+/**
+ * input: http://mangafox.me/manga/owari_no_seraph/v01/c001/
+ * output:
+ *
+ * @param mangafox_url
+ * @returns {*}
+ */
 MangaFoxScraper.prototype.getVolumeFromUrl = function(mangafox_url) {
-    url = new URI(mangafox_url);
-    //console.log(url.pathname().split("/")[3]);
-    return url.pathname().split("/")[3];
-}
+    var url = URI(mangafox_url);
+    //console.log(url.pathname().split("/"));
+    if (url.pathname().split("/").length < 6) {
+        return "v" + pad(0, 2);
+    } else { //>= 6
+        return url.pathname().split("/")[3]
+    }
+};
 
+/**
+ * input: http://mangafox.me/manga/owari_no_seraph/v01/c001/
+ * output:
+ *
+ * @param mangafox_url
+ * @returns {*}
+ */
+MangaFoxScraper.prototype.getChapterFromUrl = function(mangafox_url) {
+    var url = URI(mangafox_url);
+    //console.log(url.pathname().split("/"));
+    if (url.pathname().split("/").length < 6) {
+        return url.pathname().split("/")[3]
+    } else { //>= 6
+        return url.pathname().split("/")[4]
+    }
+};
 
 /*
 ...
@@ -211,7 +248,7 @@ MangaFoxScraper.prototype.getPageNumbersPromise = function(mangafox_chapter_url)
  */
 MangaFoxScraper.prototype.getImageUrlPromise= function(mangafox_chapter_page_url) {
     return new Promise(function(resolve, reject) {
-        resolve("Image URL");
+        resolve(mangafox_chapter_page_url); // Debug
         //var execute = function (error, response, html) {
         //    var image_url = null;
         //    if (!error && response.statusCode == 200) {
@@ -244,11 +281,16 @@ var mangaFoxScraper = new MangaFoxScraper();
 
 //var manga_url = "http://mangafox.me/manga/azure_dream/";
 //var manga_url = "http://mangafox.me/manga/hack_link/";
-var manga_url = "http://mangafox.me/manga/macchi_shoujo/";
+//var manga_url = "http://mangafox.me/manga/macchi_shoujo/";
+//var manga_url = "http://mangafox.me/manga/gto_paradise_lost/";
+var manga_url = "http://mangafox.me/manga/owari_no_seraph/";
+//var manga_url = "http://mangafox.me/manga/naruto/";
 firstPromise = mangaFoxScraper.getChapterUrlsPromise(manga_url);
 
 // STEP 1:
 firstPromise.then( function(urls) {
+
+        console.time("mangafox");
 
         urls = urls.sort(); // Sort urls before processing.
         var promises = [];
@@ -311,7 +353,7 @@ firstPromise.then( function(urls) {
 
             //chapter_image_urls[chapter_count].push(image_urls[i]);
             // Debug
-            chapter_image_urls[chapter_count].push(chapter_page_urls[chapter_count][page_count]);
+            chapter_image_urls[chapter_count].push(image_urls[i]);
 
             if (page_count == chapter_page_urls[chapter_count].length - 1)  {
                 // Go to the next chapter.
@@ -330,9 +372,9 @@ firstPromise.then( function(urls) {
     mangaFoxScraper.setChapterUrls(chapter_urls);
     mangaFoxScraper.setChapterPageUrls(chapter_page_urls);
     mangaFoxScraper.setChapterImageUrls(chapter_image_urls)
-    console.log("chapter_urls: " + chapter_urls.length);
-    console.log("chapter_page_urls: " + chapter_page_urls.length);
-    console.log("chapter_image_urls: " + chapter_image_urls.length);
+    //console.log("chapter_urls: " + chapter_urls.length);
+    //console.log("chapter_page_urls: " + chapter_page_urls.length);
+    //console.log("chapter_image_urls: " + chapter_image_urls.length);
     //console.log(mangaFoxScraper.getMangaName());
     //console.log(mangaFoxScraper.getChapterUrls());
     //console.log(mangaFoxScraper.getVolumeFromUrl("http://mangafox.me/manga/hack_link/v01/c001/"));
@@ -341,18 +383,41 @@ firstPromise.then( function(urls) {
     //console.log(chapter_image_urls);
     //console.log(chapter_image_urls[0].length);
     //console.log(chapter_image_urls[1].length);
+    //console.log(mangaFoxScraper.getMangaNameFromUrl(manga_url));
     var mangafox = new MangaFox(mangaFoxScraper.getMangaNameFromUrl(manga_url), chapter_urls, chapter_image_urls);
     console.log(mangafox);
+    console.timeEnd("mangafox");
 });
 
 function MangaFox(manga_name, chapter_urls, chapter_image_urls) {
     this.manga_name = manga_name;
     this.chapter_urls = chapter_urls;
-    this.chapters = {};
+    this.volumes = {};
+    console.log(mangaFoxScraper.getMangaNameFromUrl(chapter_urls[0]));
+    console.log(mangaFoxScraper.getVolumeFromUrl(chapter_urls[0]));
+    console.log(mangaFoxScraper.getVolumeFromUrl(chapter_urls[1]));
+    console.log(mangaFoxScraper.getChapterFromUrl(chapter_urls[0]));
+    console.log(mangaFoxScraper.getChapterFromUrl(chapter_urls[1]));
     for (var i = 0; i < (chapter_image_urls.length); i++) {
-        this.chapters["c" + (i+1)] = chapter_image_urls[i];
+        if ( this.volumes[mangaFoxScraper.getVolumeFromUrl(chapter_urls[i])] != null ) { // Add volume to chapter.
+            this.volumes[mangaFoxScraper.getVolumeFromUrl(chapter_urls[i])][mangaFoxScraper.getChapterFromUrl(chapter_urls[i])] = chapter_image_urls[i];
+        } else { // Initialize the volume.
+            this.volumes[mangaFoxScraper.getVolumeFromUrl(chapter_urls[i])] = {};
+            this.volumes[mangaFoxScraper.getVolumeFromUrl(chapter_urls[i])][mangaFoxScraper.getChapterFromUrl(chapter_urls[i])] = chapter_image_urls[i];
+        }
     }
-    this.chapters["length"] = chapter_urls.length;
+
+    this.volumes.length = count(this.volumes);
+
+    function count(obj) {
+        var count=0;
+        for(var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                ++count;
+            }
+        }
+        return count;
+    }
 }
 
 /*
