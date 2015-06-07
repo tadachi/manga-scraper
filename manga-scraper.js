@@ -10,44 +10,6 @@ var Promise = require('bluebird');
 var request = Promise.promisify(require("request"));
 var URI = require('URIjs');
 var path = require('path');
-//
-//var alpha_list =
-//    [
-//        'idx_#',
-//        'idx_a',
-//        'idx_b',
-//        'idx_c',
-//        'idx_d',
-//        'idx_e',
-//        'idx_f',
-//        'idx_g',
-//        'idx_h',
-//        'idx_i'
-//    ]
-
-/*
-...
-http://mangafox.me/manga/azrael_park_jung_yul/
-http://mangafox.me/manga/azrael_s_edge/
-http://mangafox.me/manga/azuke_honya/
-http://mangafox.me/manga/azumanga_daioh/
-http://mangafox.me/manga/azumanga_daioh_hoshuu_hen/
-http://mangafox.me/manga/azumi/
-http://mangafox.me/manga/azure_dream/
-...
-*/
-
-//request('http://mangafox.me/manga/', function (error, response, html) {
-//    var urls = [];
-//    if (!error && response.statusCode == 200) {
-//        var $ = cheerio.load(html);
-//
-//        $('#idx_a li a').each(function(i, elem) {
-//            urls.push($(this).attr('href'))
-//        });
-//        return urls;
-//    }
-//});
 
 /**
  *
@@ -64,7 +26,6 @@ function pad(num, digits) {
  * @constructor
  */
 var MangaFoxScraper = function() {};
-
 
 MangaFoxScraper.prototype = {};
 
@@ -115,6 +76,109 @@ MangaFoxScraper.prototype.getChapterFromUrl = function(mangafox_url) {
         return url.pathname().split("/")[4]
     }
 };
+
+
+
+/*
+ ...
+ http://mangafox.me/manga/azrael_park_jung_yul/
+ http://mangafox.me/manga/azrael_s_edge/
+ http://mangafox.me/manga/azuke_honya/
+ http://mangafox.me/manga/azumanga_daioh/
+ http://mangafox.me/manga/azumanga_daioh_hoshuu_hen/
+ http://mangafox.me/manga/azumi/
+ http://mangafox.me/manga/azure_dream/
+ ...
+ */
+
+MangaFoxScraper.prototype.getMangaIndexUrlsPromise = function() {
+    var mangafox_index_url = "http://mangafox.me/manga/";
+
+    var alpha_list =
+        [
+            //"#idx_\\#",
+            "#idx_a",
+            "#idx_b",
+            "#idx_c",
+            "#idx_d",
+            "#idx_e",
+            "#idx_f",
+            "#idx_g",
+            "#idx_h",
+            "#idx_i",
+            "#idx_j",
+            "#idx_k",
+            "#idx_l",
+            "#idx_m",
+            "#idx_n",
+            "#idx_o",
+            "#idx_p",
+            "#idx_q",
+            "#idx_r",
+            "#idx_s",
+            "#idx_t",
+            "#idx_u",
+            "#idx_v",
+            "#idx_w",
+            "#idx_x",
+            "#idx_y",
+            "#idx_z"
+        ];
+
+    var alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+
+    return new Promise(function (resolve, reject) {
+        var execute = function(error, response, html) {
+            var urls = {};
+            if (!error && response.statusCode == 200) {
+                var $ = cheerio.load(html);
+
+                for (var i = 0; i < alpha_list.length; i++) {
+                    var index = [];
+                    var selector = alpha_list[i] + " li a"; // "#idx_a li a" ... "#idx_c li a" ...
+                    //console.log(selector);
+                    $(selector).each(function(i, elem) {
+                        index.push($(this).attr("href"))
+                    });
+                    urls[alphabet[i]] = index;
+                }
+                //$("#idx_a li a").each(function(i, elem) {
+                //    urls.push($(this).attr('href'))
+                //});
+                urls["length"] = count(urls);
+                resolve(urls);
+            } else {
+                reject(error);
+            }
+        };
+
+        request(mangafox_index_url, execute).catch(function(err) {
+            console.log(err);
+        });
+    });
+
+    function count(obj) {
+        var count=0;
+        for(var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+}
+
+//request('http://mangafox.me/manga/', function (error, response, html) {
+//    var urls = [];
+//    if (!error && response.statusCode == 200) {
+//        var $ = cheerio.load(html);
+//
+//        $("#idx_a li a").each(function(i, elem) {
+//            urls.push($(this).attr('href'))
+//        });
+//        return urls;
+//    }
+//});
 
 /*
 ...
@@ -226,25 +290,25 @@ MangaFoxScraper.prototype.getPageNumbersPromise = function(mangafox_chapter_url)
 MangaFoxScraper.prototype.getImageUrlPromise= function(mangafox_chapter_page_url) {
     return new Promise(function(resolve, reject) {
         // Debug.
-        resolve(mangafox_chapter_page_url);
+        //resolve(mangafox_chapter_page_url);
         // Production.
-        //var execute = function (error, response, html) {
-        //    var image_url = null;
-        //    if (!error && response.statusCode == 200) {
-        //        var $ = cheerio.load(html);
-        //
-        //        image_url = $("#image").attr('src');
-        //
-        //    } else {
-        //        reject(error);
-        //    }
-        //
-        //    resolve(image_url);
-        //};
-        //
-        //request(mangafox_chapter_page_url, execute).catch(function(err) {
-        //    console.log(err);
-        //});
+        var execute = function (error, response, html) {
+            var image_url = null;
+            if (!error && response.statusCode == 200) {
+                var $ = cheerio.load(html);
+
+                image_url = $("#image").attr('src');
+
+            } else {
+                reject(error);
+            }
+
+            resolve(image_url);
+        };
+
+        request(mangafox_chapter_page_url, execute).catch(function(err) {
+            console.log(err);
+        });
     });
 
 }
@@ -260,11 +324,17 @@ var mangaFoxScraper = new MangaFoxScraper();
 
 //var manga_url = "http://mangafox.me/manga/azure_dream/";
 //var manga_url = "http://mangafox.me/manga/hack_link/";
-//var manga_url = "http://mangafox.me/manga/macchi_shoujo/";
+//var manga_url = "http://mangafox.me/manga/macchi_shoujo/"; // Works.
 //var manga_url = "http://mangafox.me/manga/gto_paradise_lost/";
 var manga_url = "http://mangafox.me/manga/owari_no_seraph/";
 //var manga_url = "http://mangafox.me/manga/naruto/";
 firstPromise = mangaFoxScraper.getChapterUrlsPromise(manga_url);
+
+//test = mangaFoxScraper.getMangaIndexUrlsPromise();
+
+//test.then( function(test) {
+//    console.log(test);
+//});
 
 // STEP 1:
 firstPromise.then( function(urls_titles) {
@@ -314,6 +384,7 @@ firstPromise.then( function(urls_titles) {
     }).catch(function (err) {
         console.log(err);
     }).then( function() {
+
         return [chapter_urls, chapter_page_urls, titles]; // Passed down.
     })
 
@@ -323,7 +394,7 @@ firstPromise.then( function(urls_titles) {
 
     for (var i = 0; i < chapter_page_urls.length; i++) {
         for (var j = 0; j < chapter_page_urls[i].length; j++) {
-            promises.push(mangaFoxScraper.getImageUrlPromise(chapter_page_urls[i][j]));
+            promises.push(mangaFoxScraper.getImageUrlPromise(chapter_page_urls[i][j]).delay(200)); // int ms.
         }
     }
 
@@ -337,8 +408,6 @@ firstPromise.then( function(urls_titles) {
 
         for (var chapter_count = 0, page_count = 0, i = 0; i < image_urls.length; i++) {
 
-            //chapter_image_urls[chapter_count].push(image_urls[i]);
-            // Debug
             chapter_image_urls[chapter_count].push(image_urls[i]);
 
             if (page_count == chapter_page_urls[chapter_count].length - 1)  {
@@ -351,17 +420,20 @@ firstPromise.then( function(urls_titles) {
             }
         }
 
+
         return [chapter_urls, chapter_page_urls, chapter_image_urls, titles]
     })
 
 })
 .spread( function(chapter_urls, chapter_page_urls, chapter_image_urls, titles) {
     var mangafox = new MangaFox(mangaFoxScraper.getMangaNameFromUrl(manga_url), chapter_urls, chapter_image_urls, titles);
+    // Debug.
     console.log(mangafox);
     console.timeEnd("mangafox");
+
 });
 
-function MangaFox(manga_name, chapter_urls, titles, chapter_image_urls) {
+function MangaFox(manga_name, chapter_urls, chapter_image_urls, titles) {
     this.manga_name = manga_name;
     this.chapter_urls = chapter_urls;
     this.volumes = {};
