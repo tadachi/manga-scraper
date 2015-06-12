@@ -1,6 +1,6 @@
 ![Travis Logo](https://travis-ci.org/tadachi/manga-scraper.svg?branch=master "Travis Build")
 
-Mangafox  
+MangaFox
 MangaTown
 
 ##Mangafox Spec:
