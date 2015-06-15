@@ -1,4 +1,8 @@
+// Debug in chrome. Disable in production.
+//var nomo = require('node-monkey').start();
+
 var manga_scraper = require('../lib/manga-scraper.js');
+var Promise = require('bluebird');
 
 exports.testPad = function(test) {
     var str1 = manga_scraper.pad(2,3);
@@ -22,16 +26,51 @@ exports.testPad = function(test) {
 };
 
 exports.testCount = function(test) {
-    var json = {
+    var test_json1 = {
         "manga_name": "macchi_shoujo",
         "chapter_urls": [
             "http://mangafox.me/manga/macchi_shoujo/v01/c000/",
             "http://mangafox.me/manga/macchi_shoujo/v01/c001/"
         ],
         "filename": "macchi_shoujo.json"
+    };
+    var test_json2 = {};
+    var test_json3 = {};
+    for (var i = 0; i < 100; i++) {
+        test_json3[i] = i;
     }
 
-    test.equals(manga_scraper.count(json), 3);
+    test.equals(manga_scraper.count(test_json1), 3);
+    test.equals(manga_scraper.count(test_json2), 0);
+    test.equals(manga_scraper.count(test_json3), 100);
 
     test.done();
 };
+
+
+exports.testGetMangaIndexUrlsPromiseResolve = function(test) {
+    var mfs = new manga_scraper.MangaFoxScraper();
+    var promise = mfs.getMangaIndexUrlsPromise();
+
+    promise.then(function(results) {
+        test.equals(results.length, 26);
+        test.done();
+    })
+};
+
+exports.testGetMangaIndexUrlsPromiseReject = function(test) {
+    var mfs = new manga_scraper.MangaFoxScraper();
+    var promise1 = mfs.getMangaIndexUrlsPromise('http://mangafox.me/mang/');
+    var promise2 = mfs.getMangaIndexUrlsPromise('http://mangaox.me/mang/');
+
+    var promises = [];
+    promises.push(promise1);
+    promises.push(promise2);
+
+    Promise.settle(promises).then( function(err) {
+        test.equals(err[0]['_settledValue']['response']['statusCode'], 404);
+        test.equals(err[1]['_settledValue']['error']['code'], 'ENOTFOUND');
+        test.done();
+    })
+};
+
