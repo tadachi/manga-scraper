@@ -47,6 +47,18 @@ exports.testCount = function(test) {
     test.done();
 };
 
+exports.testGetNonDuplicates = function(test) {
+    var array1 = [1,2,3];
+    var array2 = [1,2,3,4,5];
+    var new_array = manga_scraper.getNonDuplicates(array1,array2);
+
+    test.equals(new_array.length, [4,5].length);
+    test.equals(new_array[0], [4,5][0]);
+    test.equals(new_array[1], [4,5][1]);
+    test.done();
+
+};
+
 
 exports.testGetMangaIndexUrlsPromiseResolve = function(test) {
     var mfs = new manga_scraper.MangaFoxScraper();

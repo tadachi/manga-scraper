@@ -3,9 +3,12 @@
 MangaFox
 MangaTown
 
+## Example JSON format:
+https://raw.githubusercontent.com/tadachi/manga-scraper/master/mangafox_json/shingeki_no_kyojin.json
+
 ##Mangafox Spec:
 
-#### Directory of All Mangafox's Manga
+#### Directory of All Mangafox's Manga:
 http://mangafox.me/manga/
 
 #### Example URL/API format:
