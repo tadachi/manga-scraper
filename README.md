@@ -3,7 +3,7 @@
 MangaFox
 MangaTown
 
-## Example JSON format:
+#### Example JSON format:
 https://raw.githubusercontent.com/tadachi/manga-scraper/master/mangafox_json/shingeki_no_kyojin.json
 
 ##Mangafox Spec:
