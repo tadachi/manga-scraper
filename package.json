@@ -15,7 +15,8 @@
     "URIjs": "^1.15.1",
     "node-monkey": "^0.2.15",
     "bluebird": "^2.9.27",
-    "jsonfile": "^2.0.1"
+    "jsonfile": "^2.0.1",
+    "mkdirp": "0.5.1"
   },
   "respository": {
     "type": "git",

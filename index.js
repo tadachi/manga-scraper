@@ -21,6 +21,10 @@ var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 
 run();
 
+function download() {
+
+}
+
 function run() {
     console.log('Downloading..');
     var mfs = new ms.MangaFoxScraper();
