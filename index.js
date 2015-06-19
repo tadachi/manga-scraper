@@ -2,10 +2,23 @@
 var nomo = require('node-monkey').start();
 
 var ms = require('./lib/manga-scraper.js');
+var md = require('./lib/manga-downloader.js');
 var Promise = require('bluebird');
 var URI = require('URIjs');
 var path = require('path');
 
+
+// Download
+var manga_downloader = new md.MangaDownloader();
+
+//var manga_json = 'mangafox_json/owari_no_seraph.json';
+//var manga_json = 'mangafox_json/macchi_shoujo.json';
+var manga_json = 'mangafox_json/another_world_it_exists.json';
+
+manga_downloader.downloadManga(manga_json);
+
+
+// Scraper
 mfs = new ms.MangaFoxScraper();
 
 //var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
@@ -15,18 +28,13 @@ mfs = new ms.MangaFoxScraper();
 //var manga_url = 'http://mangafox.me/manga/asu_no_yoichi/';
 //var manga_url = 'http://mangafox.me/manga/ichiban_ushiro_no_daimaou/';
 //var manga_url = 'http://mangafox.me/manga/liar_game/';
-var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
+//var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
+var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //ms.updateManga('mangafox_json/macchi_shoujo.json');
 
-
-run();
-
-function download() {
-
-}
+//run();
 
 function run() {
-    console.log('Downloading..');
     var mfs = new ms.MangaFoxScraper();
     var promise = mfs.getChapterUrlsPromise(manga_url);
     // STEP 1:
