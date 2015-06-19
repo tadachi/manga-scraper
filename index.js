@@ -12,8 +12,8 @@ var path = require('path');
 var manga_downloader = new md.MangaDownloader();
 
 //var manga_json = 'mangafox_json/owari_no_seraph.json';
-//var manga_json = 'mangafox_json/macchi_shoujo.json';
-var manga_json = 'mangafox_json/another_world_it_exists.json';
+var manga_json = 'mangafox_json/macchi_shoujo.json';
+//var manga_json = 'mangafox_json/another_world_it_exists.json';
 
 manga_downloader.downloadManga(manga_json);
 
