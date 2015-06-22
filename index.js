@@ -6,16 +6,18 @@ var md = require('./lib/manga-downloader.js');
 var Promise = require('bluebird');
 var URI = require('URIjs');
 var path = require('path');
-
+var jsonfile = require('jsonfile');
+var fs = require('fs');
+var async = require('async');
 
 // Download
 var manga_downloader = new md.MangaDownloader();
 
-//var manga_json = 'mangafox_json/owari_no_seraph.json';
-var manga_json = 'mangafox_json/macchi_shoujo.json';
+var manga_json = 'mangafox_json/owari_no_seraph.json';
+//var manga_json = 'mangafox_json/macchi_shoujo.json';
 //var manga_json = 'mangafox_json/another_world_it_exists.json';
 
-manga_downloader.downloadManga(manga_json);
+//manga_downloader.downloadManga(manga_json);
 
 
 // Scraper
@@ -29,18 +31,22 @@ mfs = new ms.MangaFoxScraper();
 //var manga_url = 'http://mangafox.me/manga/ichiban_ushiro_no_daimaou/';
 //var manga_url = 'http://mangafox.me/manga/liar_game/';
 //var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
-var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
-//ms.updateManga('mangafox_json/macchi_shoujo.json');
+//var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
+var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 
-//run();
+//getMangaJson(manga_url);
 
-function run() {
+//var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
+//var json_file = 'mangafox_json/naruto_gaiden_the_seventh_hokage.json';
+var json_file = 'mangafox_json/owari_no_seraph.json';
+updateMangaJson(json_file);
+
+function getMangaJson(manga_url) {
+    console.time('download ' + manga_url);
     var mfs = new ms.MangaFoxScraper();
     var promise = mfs.getChapterUrlsPromise(manga_url);
     // STEP 1:
     promise.then( function(urls_titles) {
-
-        console.time(manga_url);
 
         var urls = urls_titles['urls'];
         var titles = urls_titles['titles'];
@@ -68,7 +74,7 @@ function run() {
         var chapter_page_urls = [];
 
         return Promise.all(promises).then( function (page_numbers) { // Passed Down.
-            if (urls.length == page_numbers.length) {
+            if (urls.length === page_numbers.length) {
                 for (var i = 0; i < page_numbers.length; i++) {
                     // Old
                     var url = new URI(urls[i]); // ==> 'http://mangafox.me/manga/azure_dream/v01/c001/1.html' ...
@@ -78,7 +84,7 @@ function run() {
                 }
             } else {
                 var message = 'chapter_urls and chapter_page_numbers length not equal for this manga.';
-                throw new ChaptersPagesNotEqualException(message, urls);
+                throw new mfs.ChaptersPagesNotEqualException(message, urls);
             }
 
             var ext = '.html';
@@ -89,9 +95,10 @@ function run() {
                 }
                 chapter_page_urls.push(chapter_pages);
             }
-        }).catch(function (err) {
-            console.log(err);
         }).then( function() {
+            //Debug
+            //console.log(chapter_urls);
+            //console.log(chapter_page_urls);
 
             return [chapter_urls, chapter_page_urls, titles]; // Passed down.
         })
@@ -108,12 +115,13 @@ function run() {
                 var opts = {'volume': volume, 'chapter': chapter, 'chapter_array_aligned': i,
                     'page': (j+1), 'page_array_aligned': (j)};
 
-                promises.push(mfs.getImageUrlPromise(chapter_page_urls[i][j], opts)); // int ms.
+                promises.push(mfs.getImageUrlPromise(chapter_page_urls[i][j], opts));
 
             }
         }
 
         return Promise.settle(promises).then( function (image_urls) {
+            var chapter_image_urls = [];
 
             // rejections['_settledValue']['volume']
             // rejections['_settledValue']['chapter']
@@ -128,10 +136,8 @@ function run() {
             //console.log(rejections);
 
             // Debug
-            console.log('image_urls:');
-            console.log(image_urls);
-
-            var chapter_image_urls = [];
+            //console.log('image_urls:');
+            //console.log(image_urls);
 
             // Initialize Arrays;
             for (i = 0; i < chapter_page_urls.length; i++) {
@@ -176,7 +182,7 @@ function run() {
                 'page': page,
                 'page_array_aligned': page_array_aligned
             };
-            promises.push(mfs.getImageUrlPromise(url, opts)); // int ms.
+            promises.push(mfs.getImageUrlPromise(url, opts));
         }
 
         // Retry downloading failed downloads.
@@ -200,13 +206,331 @@ function run() {
             }
 
             // Debug.
+            console.log('Mangafox Object:');
             console.log(mangafox);
-            console.timeEnd(manga_url);
+            console.timeEnd('download ' + manga_url);
 
             // Save file.
             ms.saveMangaAsJson(mangafox, 'mangafox_json');
         });
 
+    }).catch(function (err) {
+        console.log(err.message);
+        console.log(err);
+    });
+}
+
+/**
+ *
+ * @param json_file
+ */
+function updateMangaJson(json_file) {
+
+    var mfs = new ms.MangaFoxScraper();
+    var manga_json = loadJSON(json_file);
+    var manga_url = manga_json['manga_url'];
+    var chapter_urls_promise = mfs.getChapterUrlsPromise(manga_json['manga_url']);
+    console.time('update ' + manga_url);
+    chapter_urls_promise.then( function(titles_chapter_urls) {
+        var manga_name = json_file['manga_name'];
+        var old_chapters_urls = manga_json['chapter_urls'].sort();
+        var new_chapters_urls = titles_chapter_urls['urls'].sort(); // caseInsensitive to true.
+        var titles = titles_chapter_urls['titles'];
+        var new_titles = [];
+        var promises = [];
+        // Update chapter_urls
+        manga_json['chapter_urls'] = new_chapters_urls;
+
+        var update_chapters = getNonDuplicates(old_chapters_urls, new_chapters_urls);
+
+        if (!update_chapters) {
+            var message = 'No chapters to update.';
+            throw new NoChaptersToUpdateException(message, null);
+        }
+        manga_json['chapter_urls'] = new_chapters_urls;
+
+        if (titles.length != new_chapters_urls.length) {
+            var message = 'New Chapters and titles length are not equal. Something may have happened with the web requests.';
+            throw new ms.ChaptersTitlesLengthNotEqual(message, [new_chapters_urls, titles]);
+        }
+
+        var title_url = {};
+        for (var i = 0; i < titles.length; i++) {
+            title_url[new_chapters_urls[i]] = titles[i];
+        }
+        for (var i = 0; i < update_chapters.length; i++) {
+            new_titles.push(title_url[update_chapters[i]]);
+        }
+        // Debug
+        console.log(old_chapters_urls);
+        console.log(new_chapters_urls);
+        console.log(titles);
+        console.log(new_titles);
+        console.log(manga_json);
+
+        update_chapters.forEach(function(url) {
+            promises.push(mfs.getPageNumbersPromise(url));
+        });
+
+        return Promise.all(promises).then( function(page_numbers) {
+            var chapter_page_urls = [];
+            var temp_page_urls = [];
+
+            if (update_chapters.length === page_numbers.length) {
+                for (var i = 0; i < page_numbers.length; i++) {
+                    // Old
+                    var url = new URI(update_chapters[i]); // ==> 'http://mangafox.me/manga/azure_dream/v01/c001/1.html' ...
+
+                    // Set chapter urls.
+                    temp_page_urls.push(path.dirname(url.toString()) + '/') // ==> ... http://mangafox.me/manga/azure_dream/v01/c007/ ...
+                }
+            } else {
+                var message = 'chapter_urls and chapter_page_numbers length not equal for this manga.';
+                var args = {'update_chapters': update_chapters};
+                throw new ms.ChaptersPagesNotEqualException(message, args);
+            }
+            var ext = '.html';
+            for (i = 0; i < temp_page_urls.length; i++) { // chapter_urls.length == page_numbers.length.
+                var chapter_pages = [];
+                for (var j = 0; j < page_numbers[i].length; j++) {
+                    chapter_pages.push(temp_page_urls[i] + page_numbers[i][j] + ext); // ==> http://mangafox.me/manga/azure_dream/v01/c001/1.html .. 2.html .. 3.html ..
+                }
+                chapter_page_urls.push(chapter_pages);
+            }
+
+            return [update_chapters, chapter_page_urls, new_titles]; // Passed down.
+
+        })
+    })
+    .spread( function( chapter_urls, chapter_page_urls, titles) {
+        var promises = [];
+
+        //Debug
+        //console.log(chapter_urls);
+        //console.log(chapter_page_urls);
+        //console.log(titles);
+
+        // Gather promises for image downloads that failed previously.
+        for (var i = 0; i < chapter_page_urls.length; i++) {
+            var chapter = ms.getChapterFromUrl(chapter_page_urls[i][0]);
+            var volume = ms.getVolumeFromUrl(chapter_page_urls[i][0]);
+            for (var j = 0; j < chapter_page_urls[i].length; j++) {
+                var opts = {'volume': volume, 'chapter': chapter, 'chapter_array_aligned': i,
+                    'page': (j+1), 'page_array_aligned': (j)};
+
+                promises.push(mfs.getImageUrlPromise(chapter_page_urls[i][j], opts));
+
+            }
+        }
+
+        return Promise.settle(promises).then( function (image_urls) {
+            var chapter_image_urls = [];
+            // rejections['_settledValue']['volume']
+            // rejections['_settledValue']['chapter']
+            // rejections['_settledValue']['chapter_array_aligned']
+            // rejections['_settledValue']['page']
+            // rejections['_settledValue']['page_array_aligned']
+            // rejections['_settledValue']['url']
+            var rejections = image_urls.filter(function(el){ return el.isRejected(); });
+
+            // Debug
+            //console.log('Rejections:');
+            //console.log(rejections);
+
+            // Debug
+            //console.log('image_urls:');
+            //console.log(image_urls);
+
+            // Initialize Arrays;
+            for (i = 0; i < chapter_page_urls.length; i++) {
+                chapter_image_urls[i] = [];
+            }
+
+            var last = null;
+            for (var chapter_count = 0, i = 0; i < image_urls.length; i++) {
+                var curr = image_urls[i]['_settledValue']['chapter'];
+
+                if (i > 0) { last = image_urls[i-1]['_settledValue']['chapter'];
+                } else { last = image_urls[i]['_settledValue']['chapter']; }
+
+                if (curr != last) {
+                    last = curr;
+                    chapter_count++;
+                }
+                chapter_image_urls[chapter_count].push(image_urls[i]['_settledValue']['src']);
+            }
+
+            // Passed down.
+            return [chapter_urls, chapter_page_urls, chapter_image_urls, rejections, titles];
+        });
+
+    })
+    .spread( function(chapter_urls, chapter_page_urls, chapter_image_urls, rejections, titles) {
+        var promises = [];
+
+        // Gather promises of failed downloads.
+        for (var i = 0; i < rejections.length; i++) {
+            var volume = rejections[i]['_settledValue']['volume'];
+            var chapter = rejections[i]['_settledValue']['chapter'];
+            var chapter_array_aligned = rejections[i]['_settledValue']['chapter_array_aligned'];
+            var page = rejections[i]['_settledValue']['page'];
+            var page_array_aligned = rejections[i]['_settledValue']['page_array_aligned'];
+            var url = rejections[i]['_settledValue']['url'];
+
+            var opts = {
+                'volume': volume,
+                'chapter': chapter,
+                'chapter_array_aligned': chapter_array_aligned,
+                'page': page,
+                'page_array_aligned': page_array_aligned
+            };
+            promises.push(mfs.getImageUrlPromise(url, opts));
+        }
+
+        // Retry downloading failed downloads.
+        Promise.all(promises).then(function (rejected_images) {
+
+            //Debug
+            console.log(chapter_urls);
+            console.log(chapter_page_urls);
+            console.log(chapter_image_urls);
+            console.log(rejections);
+            console.log(titles);
+
+            // Debug
+            //console.log('rejected_images: ');
+            //console.log(rejected_images);
+
+            // Debug.
+            //console.log('chapter_urls: ' + chapter_urls.length);
+            //console.log('chapter_image_urls: ' + chapter_image_urls.length);
+            //console.log('titles: ' + titles.length);
+            //console.log(chapter_image_urls);
+            if (titles.length != chapter_urls.length) {
+                var message = 'Chapters and titles length are not equal. Something may have happened with the web requests.';
+                throw new ChaptersTitlesLengthNotEqual(message, [chapter_urls, titles, chapter_image_urls]);
+            }
+
+            // Set volumes and chapters for each src url.
+            for (var i = 0; i < (chapter_image_urls.length); i++) {
+                if ( manga_json['volumes'][ms.getVolumeFromUrl(chapter_urls[i])] != null ) { // Add volume to chapter.
+                    manga_json['volumes'][ms.getVolumeFromUrl(chapter_urls[i])][ms.getChapterFromUrl(chapter_urls[i])] = {'title': titles[i], 'img': chapter_image_urls[i]};
+                } else { // Initialize the volume.
+                    manga_json['volumes'][ms.getVolumeFromUrl(chapter_urls[i])] = {};
+                    manga_json['volumes'][ms.getVolumeFromUrl(chapter_urls[i])][ms.getChapterFromUrl(chapter_urls[i])] = {'title': titles[i], 'img': chapter_image_urls[i]};
+                }
+            }
+
+            manga_json['volumes']['length'] = ms.count(manga_json['volumes']);
+
+            // Add the missing/failed pages.
+            // mangafox['volumes']['volume']['chapter']['img'][i]
+            for (i = 0; i < rejected_images.length; i++) {
+                var volume = rejected_images[i]['volume'];
+                var chapter = rejected_images[i]['chapter'];
+                var page = rejected_images[i]['page_array_aligned'];
+                //mangafox.volumes.volume.chapter.img[i] = src
+                manga_json['volumes'][volume][chapter]['img'][page] = rejected_images[i]['src'];
+            }
+
+            // Debug.
+            console.log(manga_json);
+            console.timeEnd('update ' + manga_url);
+
+            // Save file.
+            //saveFile(json_file, manga_json);
+        });
+
+    })
+    .catch(function (err) {
+        console.log(err.message);
+        console.log(err);
     });
 
+    function loadJSON(json_file) {
+        try {
+            // Default encoding is utf8.
+            if (typeof (encoding) == 'undefined') { encoding = 'utf8'; }
+
+            // Read file synchronously.
+            var contents = fs.readFileSync(json_file, encoding);
+
+            // Parse contents as JSON,
+            return JSON.parse(contents);
+
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    /**
+     *
+     * @param file
+     * @param directory
+     */
+    function saveFile(file_name, data) {
+        try {
+            // Debug
+            console.log('Saving JSON file... ' + file_name);
+            console.log(data);
+            jsonfile.writeFileSync(file_name, data);
+
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * input [1,2,3], [1,2,3,4,5,6]
+     * output [4,5,6]
+     *
+     * Get the non duplicates between an old array and an updated array of the old array.
+     * Arrays must be sorted and be the same up to the the second array[first_array.length].
+     *
+     * Returns false if the arrays length match.
+     *
+     * @param array1
+     * @param array2
+     * @returns *
+     */
+    function getNonDuplicates(array1, array2) {
+        var new_items = [];
+        if (array1.length == array2.length) {
+
+            return false;
+        } else {
+            try {
+                if (array2.length > array1.length) {
+
+                    for (var i = 0, j = 0; i < array2.length; i++) {
+                        if (array1[j]) {
+                            if (array1[j] != array2[i]) {
+                                new_items.push(array2[i]);
+                            }
+                            j++;
+                        } else {
+                            new_items.push(array2[i]);
+                        }
+                    }
+                    return new_items;
+                } else {
+                    var args = {'array1_length': array1.length, 'array2_length': array2.length};
+
+                    throw new ms.Array2LenMustBeGreaterException('array2 must have greater length than array1.', args);
+                }
+            } catch(err) {
+                console.log(err);
+            }
+        }
+    }
+}
+
+/*
+ Exceptions
+ */
+function NoChaptersToUpdateException(message, args) {
+    this.args = args;
+    this.message = message;
+    this.name = 'NoChaptersToUpdateException';
 }
