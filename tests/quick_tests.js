@@ -48,8 +48,8 @@ exports.testCount = function(test) {
 
 exports.testReadMangaFileSync = function(test) {
     var data = manga_file.readMangaFileSync('test_manga.txt');
-    test.equals(data[0], 'http://mangafox.me/manga/shingeki_no_kyojin/');
-    test.equals(data.length, 9);
+    test.equals(data[0], 'http://mangafox.me/manga/m_shiki_princess/');
+    test.equals(data.length, 2);
     test.done(); // test.done must be outside for the callback to work.
 
 };
@@ -57,8 +57,8 @@ exports.testReadMangaFileSync = function(test) {
 exports.testReadMangaFile = function(test) {
 
     manga_file.readMangaFile('test_manga.txt', function(data) {
-        test.equals(data[0], 'http://mangafox.me/manga/shingeki_no_kyojin/');
-        test.equals(data.length, 9);
+        test.equals(data[0], 'http://mangafox.me/manga/m_shiki_princess/');
+        test.equals(data.length, 2);
         test.done(); // test.done must be outside for the callback to work.
     });
 
@@ -98,10 +98,9 @@ exports.testSaveMangaAsJson = function(test) {
     manga_file.exists('test.json', function(exists) {
         console.log(exists);
         test.equals(exists, true);
+        test.equals(manga_file.existsSync('test.json'), undefined);
         test.done();
     });
-
-
 
 };
 

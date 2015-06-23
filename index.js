@@ -14,7 +14,8 @@ var fs = require('fs');
 // commander.js
 var program = require('commander');
 
-var manga_list_file = 'manga.txt';
+var manga_list_file = 'tests/test_manga.txt';
+//var manga_list_file = 'manga.txt';
 
 var opts = {
     'dry': false,
@@ -64,8 +65,6 @@ function getMangaJsonInList(manga_list_file, opts) {
     var overwrite = false;
     if (opts.overwrite) { overwrite = opts.overwrite;}
 
-
-
     try {
         mf.exists(manga_list_file, function(exists) {
             if (!exists) {
@@ -83,16 +82,20 @@ function getMangaJsonInList(manga_list_file, opts) {
         var dir = 'mangafox_json';
         var tasks = [];
         console.log(manga_urls);
-        manga_urls.forEach( function(manga_url) {
-            var file = path.join(dir, ms.getMangaNameFromUrl(manga_url) + ext); // eg. shingeki_no_kyojin.json
+        var promise = new Promise(function (resolve) {
+            manga_urls.forEach( function(manga_url) {
+                var file = path.join(dir, ms.getMangaNameFromUrl(manga_url) + ext); // eg. shingeki_no_kyojin.json
 
-            mf.exists(file, function(exists) {
-                if (!exists) {
+                if (!fs.existsSync(file)) {
                     tasks.push(manga_url);
                 }
 
-            })
+            });
+            resolve(tasks);
+        });
 
+        promise.then(function (tasks) {
+            console.log(tasks);
         });
 
     } catch (err) {
@@ -102,7 +105,7 @@ function getMangaJsonInList(manga_list_file, opts) {
 
 function getMangaJson(manga_url) {
     var dry = false;
-    if (opts['dry']) var dry = opts['dry'];
+    if (opts['dry']) dry = opts['dry'];
 
     console.log('Downloading ' + manga_url + ' JSON...');
     console.time('download json' + manga_url);
