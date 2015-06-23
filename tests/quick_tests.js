@@ -93,7 +93,9 @@ exports.testSaveMangaAsJson = function(test) {
 
     var mangafox = new manga_scraper.MangaFox(manga_url, chapter_urls, chapter_image_urls, titles);
     mangafox['filename'] = 'test.json';
-    manga_scraper.saveMangaAsJson(mangafox, './');
+    manga_scraper.saveMangaAsJson(mangafox, './', function(done) {
+        test.equals(done, true);
+    });
 
     manga_file.exists('test.json', function(exists) {
         console.log(exists);

@@ -30,7 +30,7 @@ program
 // Scraper
 mfs = new ms.MangaFoxScraper();
 
-//var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
+var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
 //var manga_url = 'http://mangafox.me/manga/owari_no_seraph/';
 //var manga_url = 'http://mangafox.me/manga/shingeki_no_kyojin/';
 //var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
@@ -40,9 +40,7 @@ mfs = new ms.MangaFoxScraper();
 //var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
-var manga_url = 'http://mangafox.me/manga/fairy_tail/';
-
-//getMangaJson(manga_url);
+//var manga_url = 'http://mangafox.me/manga/fairy_tail/';
 
 // Download
 var manga_downloader = new md.MangaDownloader();
@@ -59,7 +57,7 @@ var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
 //var json_file = 'mangafox_json/owari_no_seraph.json';
 //updateMangaJson(json_file, opts);
 
-getMangaJsonInList(manga_list_file, opts);
+//getMangaJsonInList(manga_list_file, opts);
 
 function getMangaJsonInList(manga_list_file, opts) {
     var overwrite = false;
@@ -103,7 +101,7 @@ function getMangaJsonInList(manga_list_file, opts) {
     }
 }
 
-function getMangaJson(manga_url) {
+function getMangaJson(manga_url, callback) {
     var dry = false;
     if (opts['dry']) dry = opts['dry'];
 
@@ -281,7 +279,9 @@ function getMangaJson(manga_url) {
                 console.log('Dry run. JSON not saved');
             } else {
                 // Save file.
-                ms.saveMangaAsJson(mangafox, 'mangafox_json');
+                ms.saveMangaAsJson(mangafox, 'mangafox_json', function(done) {
+                    if (done) callback(true);
+                });
             }
 
         });
