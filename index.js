@@ -3,22 +3,28 @@ var nomo = require('node-monkey').start();
 
 var ms = require('./lib/manga-scraper.js');
 var md = require('./lib/manga-downloader.js');
+var mf = require('./lib/manga-file.js');
+
 var Promise = require('bluebird');
 var URI = require('URIjs');
 var path = require('path');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
-var async = require('async');
 
-// Download
-var manga_downloader = new md.MangaDownloader();
+// commander.js
+var program = require('commander');
 
-var manga_json = 'mangafox_json/owari_no_seraph.json';
-//var manga_json = 'mangafox_json/macchi_shoujo.json';
-//var manga_json = 'mangafox_json/another_world_it_exists.json';
+var manga_list_file = 'manga.txt';
 
-//manga_downloader.downloadManga(manga_json);
+var opts = {
+    'dry': false,
+    'JSON_only': false,
+    'overwrite': false
+};
 
+program
+.version('0.0.1')
+.parse(process.argv);
 
 // Scraper
 mfs = new ms.MangaFoxScraper();
@@ -32,19 +38,77 @@ mfs = new ms.MangaFoxScraper();
 //var manga_url = 'http://mangafox.me/manga/liar_game/';
 //var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
-var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
+//var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
+var manga_url = 'http://mangafox.me/manga/fairy_tail/';
 
 //getMangaJson(manga_url);
 
-//var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
+// Download
+var manga_downloader = new md.MangaDownloader();
+
+//var manga_json = 'mangafox_json/owari_no_seraph.json';
+//var manga_json = 'mangafox_json/sidonia_no_kishi.json';
+//var manga_json = 'mangafox_json/macchi_shoujo.json';
+//var manga_json = 'mangafox_json/another_world_it_exists.json';
+var manga_json = 'tests/test_owari_no_seraph_old.json';
+//manga_downloader.downloadManga(manga_json);
+
+var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
 //var json_file = 'mangafox_json/naruto_gaiden_the_seventh_hokage.json';
-var json_file = 'mangafox_json/owari_no_seraph.json';
-updateMangaJson(json_file);
+//var json_file = 'mangafox_json/owari_no_seraph.json';
+//updateMangaJson(json_file, opts);
+
+getMangaJsonInList(manga_list_file, opts);
+
+function getMangaJsonInList(manga_list_file, opts) {
+    var overwrite = false;
+    if (opts.overwrite) { overwrite = opts.overwrite;}
+
+
+
+    try {
+        mf.exists(manga_list_file, function(exists) {
+            if (!exists) {
+                var message = manga_list_file + ' does not exist';
+                throw new mf.FileDoesNotExistException(message, manga_list_file);
+            }
+        });
+        // ...
+        // http://mangafox.me/manga/shingeki_no_kyojin/
+        // http://mangafox.me/manga/sidonia_no_kishi/
+        // http://mangafox.me/manga/asu_no_yoichi/
+        // ...
+        var manga_urls = mf.readMangaFileSync(manga_list_file);
+        var ext = '.json';
+        var dir = 'mangafox_json';
+        var tasks = [];
+        console.log(manga_urls);
+        manga_urls.forEach( function(manga_url) {
+            var file = path.join(dir, ms.getMangaNameFromUrl(manga_url) + ext); // eg. shingeki_no_kyojin.json
+
+            mf.exists(file, function(exists) {
+                if (!exists) {
+                    tasks.push(manga_url);
+                }
+
+            })
+
+        });
+
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 function getMangaJson(manga_url) {
-    console.time('download ' + manga_url);
+    var dry = false;
+    if (opts['dry']) var dry = opts['dry'];
+
+    console.log('Downloading ' + manga_url + ' JSON...');
+    console.time('download json' + manga_url);
     var mfs = new ms.MangaFoxScraper();
     var promise = mfs.getChapterUrlsPromise(manga_url);
+
     // STEP 1:
     promise.then( function(urls_titles) {
 
@@ -131,14 +195,6 @@ function getMangaJson(manga_url) {
             // rejections['_settledValue']['url']
             var rejections = image_urls.filter(function(el){ return el.isRejected(); });
 
-            // Debug
-            //console.log('Rejections:');
-            //console.log(rejections);
-
-            // Debug
-            //console.log('image_urls:');
-            //console.log(image_urls);
-
             // Initialize Arrays;
             for (i = 0; i < chapter_page_urls.length; i++) {
                 chapter_image_urls[i] = [];
@@ -157,6 +213,14 @@ function getMangaJson(manga_url) {
                 }
                 chapter_image_urls[chapter_count].push(image_urls[i]['_settledValue']['src']);
             }
+
+            // Debug
+            //console.log('Rejections:');
+            //console.log(rejections);
+            //console.log('image_urls:');
+            //console.log(image_urls);
+            console.log('chapter_image_urls:');
+            console.log(chapter_image_urls);
 
             // Passed down.
             return [chapter_urls, chapter_page_urls, chapter_image_urls, rejections, titles]
@@ -208,10 +272,15 @@ function getMangaJson(manga_url) {
             // Debug.
             console.log('Mangafox Object:');
             console.log(mangafox);
-            console.timeEnd('download ' + manga_url);
+            console.timeEnd('download json' + manga_url);
 
-            // Save file.
-            ms.saveMangaAsJson(mangafox, 'mangafox_json');
+            if (dry) {
+                console.log('Dry run. JSON not saved');
+            } else {
+                // Save file.
+                ms.saveMangaAsJson(mangafox, 'mangafox_json');
+            }
+
         });
 
     }).catch(function (err) {
@@ -223,14 +292,20 @@ function getMangaJson(manga_url) {
 /**
  *
  * @param json_file
+ * @param opts
  */
-function updateMangaJson(json_file) {
+function updateMangaJson(json_file, opts) {
+    console.log('Updating ' + manga_url + ' JSON,,,');
+    var dry = false;
+    if (opts['dry']) var dry = opts['dry'];
 
     var mfs = new ms.MangaFoxScraper();
     var manga_json = loadJSON(json_file);
     var manga_url = manga_json['manga_url'];
     var chapter_urls_promise = mfs.getChapterUrlsPromise(manga_json['manga_url']);
-    console.time('update ' + manga_url);
+
+    console.time('update json' + manga_url);
+
     chapter_urls_promise.then( function(titles_chapter_urls) {
         var manga_name = json_file['manga_name'];
         var old_chapters_urls = manga_json['chapter_urls'].sort();
@@ -244,8 +319,8 @@ function updateMangaJson(json_file) {
         var update_chapters = getNonDuplicates(old_chapters_urls, new_chapters_urls);
 
         if (!update_chapters) {
-            var message = 'No chapters to update.';
-            throw new NoChaptersToUpdateException(message, null);
+            var message = 'No chapters to update for ' + json_file ;
+            throw new NoChaptersToUpdateException(message, [json_file]);
         }
         manga_json['chapter_urls'] = new_chapters_urls;
 
@@ -258,15 +333,15 @@ function updateMangaJson(json_file) {
         for (var i = 0; i < titles.length; i++) {
             title_url[new_chapters_urls[i]] = titles[i];
         }
-        for (var i = 0; i < update_chapters.length; i++) {
+        for (i = 0; i < update_chapters.length; i++) {
             new_titles.push(title_url[update_chapters[i]]);
         }
         // Debug
-        console.log(old_chapters_urls);
-        console.log(new_chapters_urls);
-        console.log(titles);
-        console.log(new_titles);
-        console.log(manga_json);
+        //console.log(old_chapters_urls);
+        //console.log(new_chapters_urls);
+        //console.log(titles);
+        //console.log(new_titles);
+        //console.log(manga_json);
 
         update_chapters.forEach(function(url) {
             promises.push(mfs.getPageNumbersPromise(url));
@@ -384,6 +459,7 @@ function updateMangaJson(json_file) {
                 'page': page,
                 'page_array_aligned': page_array_aligned
             };
+
             promises.push(mfs.getImageUrlPromise(url, opts));
         }
 
@@ -391,11 +467,11 @@ function updateMangaJson(json_file) {
         Promise.all(promises).then(function (rejected_images) {
 
             //Debug
-            console.log(chapter_urls);
-            console.log(chapter_page_urls);
-            console.log(chapter_image_urls);
-            console.log(rejections);
-            console.log(titles);
+            //console.log(chapter_urls);
+            //console.log(chapter_page_urls);
+            //console.log(chapter_image_urls);
+            //console.log(rejections);
+            //console.log(titles);
 
             // Debug
             //console.log('rejected_images: ');
@@ -421,7 +497,7 @@ function updateMangaJson(json_file) {
                 }
             }
 
-            manga_json['volumes']['length'] = ms.count(manga_json['volumes']);
+            manga_json['volumes']['length'] = ms.count(manga_json['volumes']-1); // -1 because of length
 
             // Add the missing/failed pages.
             // mangafox['volumes']['volume']['chapter']['img'][i]
@@ -434,11 +510,17 @@ function updateMangaJson(json_file) {
             }
 
             // Debug.
+            console.log('manga_json: ');
             console.log(manga_json);
-            console.timeEnd('update ' + manga_url);
+            console.time('update json' + manga_url);
 
             // Save file.
-            //saveFile(json_file, manga_json);
+            if (dry) {
+                console.log('Dry run. JSON not saved');
+            } else {
+                saveFile(json_file, manga_json);
+            }
+
         });
 
     })
@@ -464,6 +546,7 @@ function updateMangaJson(json_file) {
     }
 
     /**
+     * Save data as JSON.
      *
      * @param file
      * @param directory
