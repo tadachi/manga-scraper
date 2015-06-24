@@ -17,18 +17,29 @@ var program = require('commander');
 var manga_list_file = 'tests/test_manga.txt';
 //var manga_list_file = 'manga.txt';
 
+// Defaults
 var opts = {
-    'dry': false,
-    'JSON_only': false,
-    'overwrite': false,
-    'json_directory': 'manga_json'
+    'dry': false, // When downloading singular, do not download anything, not even JSON.
+    'JSON_only': false, // When batch processing, only download the json, do not download images.
+    'overwrite': false, // Overwrite images. Even if they exist.
+    'json_directory': 'manga_json',
+    'manga_directory': 'manga',
+    'manga_list_file': 'manga.txt'
 };
 
-program
-.version('0.0.1')
-.parse(process.argv);
+/**
+ * commander.js stub
+ */
+//program
+//    .version('0.0.1')
+//    .option('-f, --manga_list_file <file>', 'line feed separated list of manga to download.')
+//    .parse(process.argv);
+//
+//console.log(program);
 
-// Scraper
+/*
+ Scraper
+ */
 mfs = new ms.MangaFoxScraper();
 
 var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
@@ -43,11 +54,13 @@ var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 //var manga_url = 'http://mangafox.me/manga/fairy_tail/';
 
-getMangaJson(manga_url, function(done) {
-    console.log(done);
-});
+//getMangaJson(manga_url, function(done) {
+//    console.log(done);
+//});
 
-// Download
+/*
+ Download
+ */
 var manga_downloader = new md.MangaDownloader();
 
 //var manga_json = 'manga_json/owari_no_seraph.json';
@@ -57,16 +70,24 @@ var manga_downloader = new md.MangaDownloader();
 var manga_json = 'tests/test_owari_no_seraph_old.json';
 //manga_downloader.downloadManga(manga_json);
 
-var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
+/*
+ Update
+ */
+//var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
 //var json_file = 'manga_json/naruto_gaiden_the_seventh_hokage.json';
 //var json_file = 'manga_json/owari_no_seraph.json';
 //updateMangaJson(json_file, opts);
 
+/*
+ Batch scrape, download, update
+ */
 //getMangaJsonInList(manga_list_file, opts);
 
 function getMangaJsonInList(manga_list_file, opts) {
     var overwrite = false;
-    if (opts.overwrite) { overwrite = opts.overwrite;}
+    var dir = 'manga_json';
+    if (opts.overwrite) { overwrite = opts.overwrite; }
+    if (opts.json_directory) { dir = opts.json_directory; }
 
     try {
         mf.exists(manga_list_file, function(exists) {
@@ -82,7 +103,6 @@ function getMangaJsonInList(manga_list_file, opts) {
         // ...
         var manga_urls = mf.readMangaFileSync(manga_list_file);
         var ext = '.json';
-        var dir = 'manga_json';
         var tasks = [];
         console.log(manga_urls);
         var promise = new Promise(function (resolve) {
@@ -114,7 +134,9 @@ function getMangaJsonInList(manga_list_file, opts) {
  */
 function getMangaJson(manga_url, callback) {
     var dry = false;
+    var dir = 'manga_json';
     if (opts['dry']) dry = opts['dry'];
+    if (opts.json_directory) { dir = opts.json_directory; }
 
     console.log('Downloading ' + manga_url + ' JSON...');
     console.time('download json' + manga_url);
@@ -290,7 +312,7 @@ function getMangaJson(manga_url, callback) {
                 console.log('Dry run. JSON not saved');
             } else {
                 // Save file.
-                ms.saveMangaAsJson(mangafox, 'manga_json', function(done) {
+                ms.saveMangaAsJson(mangafox, dir, function(done) {
                     if (done) callback(true);
                 });
             }
@@ -310,7 +332,7 @@ function getMangaJson(manga_url, callback) {
  * @param callback
  */
 function updateMangaJson(json_file, opts, callback) {
-    console.log('Updating ' + manga_url + ' JSON,,,');
+    console.log('Updating ' + manga_url + ' JSON...');
     var dry = false;
     if (opts['dry']) var dry = opts['dry'];
 
