@@ -17,17 +17,20 @@ var program = require('commander');
 var manga_list_file = 'tests/test_manga.txt';
 //var manga_list_file = 'manga.txt';
 
-// Defaults
-var opts = {
-    'dry': false, // When downloading singular, do not download anything, not even JSON.
-    'JSON_only': false, // When batch processing, only download the json, do not download images.
-    'overwrite': false, // Overwrite images. Even if they exist.
-    'json_directory': 'manga_json',
-    'manga_directory': 'manga',
-    'manga_list_file': 'manga.txt'
-};
+/*
+ * Defaults
+ */
+var opts = mf.readJsonConfigFile('config.json');
+//var opts = {
+//    'dry': false, // When downloading singular, do not download anything, not even JSON.
+//    'JSON_only': false, // When batch processing, only download the json, do not download images.
+//    'overwrite': false, // Overwrite images. Even if they exist.
+//    'json_directory': 'manga_json',
+//    'manga_directory': 'manga',
+//    'manga_list_file': 'manga.txt'
+//};
 
-/**
+/*
  * commander.js stub
  */
 //program
@@ -42,21 +45,21 @@ var opts = {
  */
 mfs = new ms.MangaFoxScraper();
 
-var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
+//var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
 //var manga_url = 'http://mangafox.me/manga/owari_no_seraph/';
 //var manga_url = 'http://mangafox.me/manga/shingeki_no_kyojin/';
 //var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
 //var manga_url = 'http://mangafox.me/manga/asu_no_yoichi/';
 //var manga_url = 'http://mangafox.me/manga/ichiban_ushiro_no_daimaou/';
 //var manga_url = 'http://mangafox.me/manga/liar_game/';
-//var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
+var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 //var manga_url = 'http://mangafox.me/manga/fairy_tail/';
 
-//getMangaJson(manga_url, function(done) {
-//    console.log(done);
-//});
+getMangaJson(manga_url, function(done) {
+    console.log(done);
+});
 
 /*
  Download
@@ -284,23 +287,23 @@ function getMangaJson(manga_url, callback) {
         }
 
         // Retry downloading failed downloads.
-        Promise.all(promises).then(function (rejected_images) {
+        Promise.all(promises).then(function (rejected_image_urls) {
 
             // Debug
-            console.log('rejected_images: ');
-            console.log(rejected_images);
+            console.log('rejected_images_urls: ');
+            console.log(rejected_image_urls);
 
             // Finally build or mangafox object with all references to each page of each chapter of each volume, etc.
             var mangafox = new ms.MangaFox(manga_url, chapter_urls, chapter_image_urls, titles);
 
             // Add the missing/failed pages.
             // mangafox['volumes']['volume']['chapter']['img'][i]
-            for (var i = 0; i < rejected_images.length; i++) {
-                var volume = rejected_images[i]['volume'];
-                var chapter = rejected_images[i]['chapter'];
-                var page = rejected_images[i]['page_array_aligned'];
+            for (var i = 0; i < rejected_image_urls.length; i++) {
+                var volume = rejected_image_urls[i]['volume'];
+                var chapter = rejected_image_urls[i]['chapter'];
+                var page = rejected_image_urls[i]['page_array_aligned'];
                 //mangafox.volumes.volume.chapter.img[i] = src
-                mangafox['volumes'][volume][chapter]['img'][page] = rejected_images[i]['src'];
+                mangafox['volumes'][volume][chapter]['img'][page] = rejected_image_urls[i]['src'];
             }
 
             // Debug.
