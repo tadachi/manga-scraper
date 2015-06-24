@@ -20,7 +20,8 @@ var manga_list_file = 'tests/test_manga.txt';
 var opts = {
     'dry': false,
     'JSON_only': false,
-    'overwrite': false
+    'overwrite': false,
+    'json_directory': 'manga_json'
 };
 
 program
@@ -42,19 +43,23 @@ var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 //var manga_url = 'http://mangafox.me/manga/fairy_tail/';
 
+getMangaJson(manga_url, function(done) {
+    console.log(done);
+});
+
 // Download
 var manga_downloader = new md.MangaDownloader();
 
-//var manga_json = 'mangafox_json/owari_no_seraph.json';
-//var manga_json = 'mangafox_json/sidonia_no_kishi.json';
-//var manga_json = 'mangafox_json/macchi_shoujo.json';
-//var manga_json = 'mangafox_json/another_world_it_exists.json';
+//var manga_json = 'manga_json/owari_no_seraph.json';
+//var manga_json = 'manga_json/sidonia_no_kishi.json';
+//var manga_json = 'manga_json/macchi_shoujo.json';
+//var manga_json = 'manga_json/another_world_it_exists.json';
 var manga_json = 'tests/test_owari_no_seraph_old.json';
 //manga_downloader.downloadManga(manga_json);
 
 var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
-//var json_file = 'mangafox_json/naruto_gaiden_the_seventh_hokage.json';
-//var json_file = 'mangafox_json/owari_no_seraph.json';
+//var json_file = 'manga_json/naruto_gaiden_the_seventh_hokage.json';
+//var json_file = 'manga_json/owari_no_seraph.json';
 //updateMangaJson(json_file, opts);
 
 //getMangaJsonInList(manga_list_file, opts);
@@ -77,7 +82,7 @@ function getMangaJsonInList(manga_list_file, opts) {
         // ...
         var manga_urls = mf.readMangaFileSync(manga_list_file);
         var ext = '.json';
-        var dir = 'mangafox_json';
+        var dir = 'manga_json';
         var tasks = [];
         console.log(manga_urls);
         var promise = new Promise(function (resolve) {
@@ -101,6 +106,12 @@ function getMangaJsonInList(manga_list_file, opts) {
     }
 }
 
+/**
+ *
+ *
+ * @param manga_url
+ * @param callback
+ */
 function getMangaJson(manga_url, callback) {
     var dry = false;
     if (opts['dry']) dry = opts['dry'];
@@ -279,7 +290,7 @@ function getMangaJson(manga_url, callback) {
                 console.log('Dry run. JSON not saved');
             } else {
                 // Save file.
-                ms.saveMangaAsJson(mangafox, 'mangafox_json', function(done) {
+                ms.saveMangaAsJson(mangafox, 'manga_json', function(done) {
                     if (done) callback(true);
                 });
             }
@@ -296,8 +307,9 @@ function getMangaJson(manga_url, callback) {
  *
  * @param json_file
  * @param opts
+ * @param callback
  */
-function updateMangaJson(json_file, opts) {
+function updateMangaJson(json_file, opts, callback) {
     console.log('Updating ' + manga_url + ' JSON,,,');
     var dry = false;
     if (opts['dry']) var dry = opts['dry'];
@@ -521,7 +533,8 @@ function updateMangaJson(json_file, opts) {
             if (dry) {
                 console.log('Dry run. JSON not saved');
             } else {
-                saveFile(json_file, manga_json);
+                saveFileSync(json_file, manga_json);
+                callback(true);
             }
 
         });
@@ -549,12 +562,12 @@ function updateMangaJson(json_file, opts) {
     }
 
     /**
-     * Save data as JSON.
+     * Save data as JSON. Synchronous.
      *
      * @param file
      * @param directory
      */
-    function saveFile(file_name, data) {
+    function saveFileSync(file_name, data) {
         try {
             // Debug
             console.log('Saving JSON file... ' + file_name);

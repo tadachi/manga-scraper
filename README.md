@@ -1,10 +1,9 @@
 ![Travis Logo](https://travis-ci.org/tadachi/manga-scraper.svg?branch=master "Travis Build")
 
 MangaFox
-MangaTown
 
 #### Example JSON format:
-https://raw.githubusercontent.com/tadachi/manga-scraper/master/mangafox_json/shingeki_no_kyojin.json
+https://raw.githubusercontent.com/tadachi/manga-scraper/master/manga_json/shingeki_no_kyojin.json
 
 ##Mangafox Spec:
 
