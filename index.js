@@ -10,12 +10,10 @@ var URI = require('URIjs');
 var path = require('path');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
+var async = require('async');
 
 // commander.js
 var program = require('commander');
-
-var manga_list_file = 'tests/test_manga.txt';
-//var manga_list_file = 'manga.txt';
 
 /*
  * Defaults
@@ -57,9 +55,9 @@ var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 //var manga_url = 'http://mangafox.me/manga/fairy_tail/';
 
-getMangaJson(manga_url, function(done) {
-    console.log(done);
-});
+//getMangaJson(manga_url, function(done) {
+//    console.log(done);
+//});
 
 /*
  Download
@@ -84,11 +82,20 @@ var manga_json = 'tests/test_owari_no_seraph_old.json';
 /*
  Batch scrape, download, update
  */
-//getMangaJsonInList(manga_list_file, opts);
+var manga_list_file = 'tests/test_manga.txt';
+//var manga_list_file = 'manga.txt';
 
+getMangaJsonInList(manga_list_file, opts);
+
+/**
+ *
+ * @param manga_list_file
+ * @param opts
+ */
 function getMangaJsonInList(manga_list_file, opts) {
     var overwrite = false;
     var dir = 'manga_json';
+
     if (opts.overwrite) { overwrite = opts.overwrite; }
     if (opts.json_directory) { dir = opts.json_directory; }
 
@@ -106,23 +113,48 @@ function getMangaJsonInList(manga_list_file, opts) {
         // ...
         var manga_urls = mf.readMangaFileSync(manga_list_file);
         var ext = '.json';
-        var tasks = [];
-        console.log(manga_urls);
+        var manga_to_process = [];
+
         var promise = new Promise(function (resolve) {
             manga_urls.forEach( function(manga_url) {
                 var file = path.join(dir, ms.getMangaNameFromUrl(manga_url) + ext); // eg. shingeki_no_kyojin.json
 
                 if (!fs.existsSync(file)) {
-                    tasks.push(manga_url);
+                    manga_to_process.push(manga_url);
                 }
 
             });
-            resolve(tasks);
+            resolve(manga_to_process);
         });
 
-        promise.then(function (tasks) {
-            console.log(tasks);
+        promise.then(function (manga_to_process) {
+            var asyncTasks = [];
+            manga_to_process.forEach(function(manga_url){
+                (function(mga_url) {
+                    asyncTasks.push(
+                        function(callback) {
+                            getMangaJson(mga_url, function(done) {
+                                callback(null, {'manga_url': mga_url, 'done': done});
+                            })
+                        }
+
+                    )
+                })(manga_url);
+            });
+
+            console.time(manga_list_file);
+
+            async.series(asyncTasks, function(err, results) {
+                console.log('Errors:');
+                console.log(err);
+                console.log('Results:');
+                console.log(results);
+                console.timeEnd(manga_list_file);
+                console.log('\n\n');
+            });
+
         });
+
 
     } catch (err) {
         console.log(err);
@@ -309,13 +341,15 @@ function getMangaJson(manga_url, callback) {
             // Debug.
             console.log('Mangafox Object:');
             console.log(mangafox);
-            console.timeEnd('download json' + manga_url);
+
 
             if (dry) {
                 console.log('Dry run. JSON not saved');
             } else {
                 // Save file.
                 ms.saveMangaAsJson(mangafox, dir, function(done) {
+                    console.timeEnd('download json' + manga_url);
+                    console.log('\n\n');
                     if (done) callback(true);
                 });
             }
@@ -552,13 +586,15 @@ function updateMangaJson(json_file, opts, callback) {
             // Debug.
             console.log('manga_json: ');
             console.log(manga_json);
-            console.time('update json' + manga_url);
+
 
             // Save file.
             if (dry) {
                 console.log('Dry run. JSON not saved');
             } else {
                 saveFileSync(json_file, manga_json);
+                console.timeEnd('update json' + manga_url);
+                console.log('\n\n');
                 callback(true);
             }
 
