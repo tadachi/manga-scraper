@@ -13,20 +13,31 @@ var fs = require('fs');
 var async = require('async');
 
 // commander.js
-var program = require('commander');
+//var program = require('commander');
 
 /*
  * Defaults
  */
-var opts = mf.readJsonConfigFile('config.json');
+//var opts = mf.readJsonConfigFile('config.json');
+var opts = {
+    'dry': false, // When downloading singular, do not download anything, not even JSON.
+    'JSON_only': false, // When batch processing, only download the json, do not download images.
+    'overwrite': false, // Overwrite images. Even if they exist.
+    'json_directory': 'manga_json',
+    'manga_directory': 'manga',
+    'manga_list_file': 'manga.txt',
+    'timeout': 10000 // ms
+};
 //var opts = {
-//    'dry': false, // When downloading singular, do not download anything, not even JSON.
+//    'dry': true, // When downloading singular, do not download anything, not even JSON.
 //    'JSON_only': false, // When batch processing, only download the json, do not download images.
 //    'overwrite': false, // Overwrite images. Even if they exist.
-//    'json_directory': 'manga_json',
+//    'json_directory': 'tests/test_manga_json',
 //    'manga_directory': 'manga',
-//    'manga_list_file': 'manga.txt'
+//    'manga_list_file': 'test_manga.txt'
+//    'timeout': 5000 // ms
 //};
+
 
 /*
  * commander.js stub
@@ -41,7 +52,7 @@ var opts = mf.readJsonConfigFile('config.json');
 /*
  Scraper
  */
-mfs = new ms.MangaFoxScraper();
+//mfs = new ms.MangaFoxScraper();
 
 //var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // Works.;
 //var manga_url = 'http://mangafox.me/manga/owari_no_seraph/';
@@ -50,7 +61,7 @@ mfs = new ms.MangaFoxScraper();
 //var manga_url = 'http://mangafox.me/manga/asu_no_yoichi/';
 //var manga_url = 'http://mangafox.me/manga/ichiban_ushiro_no_daimaou/';
 //var manga_url = 'http://mangafox.me/manga/liar_game/';
-var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
+//var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 //var manga_url = 'http://mangafox.me/manga/fairy_tail/';
@@ -62,30 +73,38 @@ var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 /*
  Download
  */
-var manga_downloader = new md.MangaDownloader();
+//var manga_downloader = new md.MangaDownloader();
 
 //var manga_json = 'manga_json/owari_no_seraph.json';
 //var manga_json = 'manga_json/sidonia_no_kishi.json';
 //var manga_json = 'manga_json/macchi_shoujo.json';
 //var manga_json = 'manga_json/another_world_it_exists.json';
-var manga_json = 'tests/test_owari_no_seraph_old.json';
+//var manga_json = 'tests/test_owari_no_seraph.json';
 //manga_downloader.downloadManga(manga_json);
 
 /*
  Update
  */
 //var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
+//var json_file = 'tests/test_manga_json/test_owari_no_seraph.json';
 //var json_file = 'manga_json/naruto_gaiden_the_seventh_hokage.json';
 //var json_file = 'manga_json/owari_no_seraph.json';
-//updateMangaJson(json_file, opts);
+
+//updateMangaJson(json_file, opts, function(done) {
+//    console.log(done);
+//});
+
 
 /*
  Batch scrape, download, update
  */
-var manga_list_file = 'tests/test_manga.txt';
-//var manga_list_file = 'manga.txt';
+//var manga_list_file = 'tests/test_manga.txt';
+var manga_list_file = 'manga.txt';
+//var manga_json_dir = 'tests/test_manga_json';
+var manga_json_dir = 'manga_json';
 
-getMangaJsonInList(manga_list_file, opts);
+//getMangaJsonInList(manga_list_file, opts);
+updateMangaJsonInList(manga_json_dir, opts);
 
 /**
  *
@@ -93,11 +112,12 @@ getMangaJsonInList(manga_list_file, opts);
  * @param opts
  */
 function getMangaJsonInList(manga_list_file, opts) {
+    // Defaults.
     var overwrite = false;
-    var dir = 'manga_json';
+    var manga_json_dir = 'manga_json';
 
     if (opts.overwrite) { overwrite = opts.overwrite; }
-    if (opts.json_directory) { dir = opts.json_directory; }
+    if (opts.json_directory) { manga_json_dir = opts.json_directory; }
 
     try {
         mf.exists(manga_list_file, function(exists) {
@@ -114,53 +134,111 @@ function getMangaJsonInList(manga_list_file, opts) {
         var manga_urls = mf.readMangaFileSync(manga_list_file);
         var ext = '.json';
         var manga_to_process = [];
-
-        var promise = new Promise(function (resolve) {
-            manga_urls.forEach( function(manga_url) {
-                var file = path.join(dir, ms.getMangaNameFromUrl(manga_url) + ext); // eg. shingeki_no_kyojin.json
-
-                if (!fs.existsSync(file)) {
-                    manga_to_process.push(manga_url);
-                }
-
-            });
-            resolve(manga_to_process);
-        });
-
-        promise.then(function (manga_to_process) {
-            var asyncTasks = [];
-            manga_to_process.forEach(function(manga_url){
-                (function(mga_url) {
-                    asyncTasks.push(
-                        function(callback) {
-                            getMangaJson(mga_url, function(done) {
-                                callback(null, {'manga_url': mga_url, 'done': done});
-                            })
-                        }
-
-                    )
-                })(manga_url);
-            });
-
-            console.time(manga_list_file);
-
-            async.series(asyncTasks, function(err, results) {
-                console.log('Errors:');
-                console.log(err);
-                console.log('Results:');
-                console.log(results);
-                console.timeEnd(manga_list_file);
-                console.log('\n\n');
-            });
-
-        });
-
-
     } catch (err) {
         console.log(err);
     }
+
+    var promise = new Promise(function (resolve) {
+        manga_urls.forEach( function(manga_url) {
+            var file = path.join(manga_json_dir, ms.getMangaNameFromUrl(manga_url) + ext); // eg. shingeki_no_kyojin.json
+
+            if (overwrite) { // Overwrite JSON_File if true.
+                manga_to_process.push(manga_url);
+            } else {
+                if (!fs.existsSync(file)) { // If the JSON file doesn't exist.
+                    manga_to_process.push(manga_url);
+                }
+            }
+
+        });
+        resolve(manga_to_process);
+    });
+
+    promise.then(function (manga_to_process) {
+        var asyncTasks = [];
+        manga_to_process.forEach(function(manga_url){
+            (function(mga_url) {
+                asyncTasks.push(
+                    function(callback) {
+                        getMangaJson(mga_url, function(done) {
+                            setTimeout(function() {
+                                callback(null, {'manga_url': mga_url, 'done': done});
+                            }, opts['timeout']);
+
+                        })
+                    }
+
+                )
+            })(manga_url);
+        });
+
+        console.time(manga_list_file);
+
+        async.series(asyncTasks, function(err, results) {
+            console.log('Errors:');
+            console.log(err);
+            console.log('Results:');
+            console.log(results);
+            console.timeEnd(manga_list_file);
+            console.log('\n\n');
+        });
+
+    });
+
 }
 
+function updateMangaJsonInList(manga_json_dir, opts) {
+    // Defaults.
+
+    //if (opts.json_directory) { manga_json_dir = opts.json_directory; }
+
+    try {
+        mf.exists(manga_json_dir, function(exists) {
+            if (!exists) {
+                var message = manga_json_dir + ' does not exist';
+                throw new mf.FileDoesNotExistException(message, manga_json_dir);
+            }
+        });
+    } catch (err) {
+        console.log(err);
+    }
+
+    // ...
+    // manga_json/shingeki_no_kyojin.json
+    // manga_json/sidonia_no_kishi.json
+    // ...
+    var manga_json_files = mf.readJsonFilesInDirSync(manga_json_dir);
+
+    var asyncTasks = [];
+    manga_json_files.forEach(function(manga_json_file){
+        var f = path.join(manga_json_dir, manga_json_file);
+        console.log(f);
+        (function(mga_json_f) {
+            asyncTasks.push(
+                function(callback) {
+                    updateMangaJson(mga_json_f, opts, function(done) {
+                        setTimeout(function() {
+                            callback(null, {'manga_url': mga_json_f, 'done': done});
+                        }, opts['timeout']);
+                    })
+                }
+
+            )
+        })(f);
+    });
+
+    console.time(manga_json_dir);
+
+    async.series(asyncTasks, function(err, results) {
+        console.log('Errors:');
+        console.log(err);
+        console.log('Results:');
+        console.log(results);
+        console.timeEnd(manga_json_dir);
+        console.log('\n\n');
+    });
+
+}
 /**
  *
  *
@@ -181,15 +259,12 @@ function getMangaJson(manga_url, callback) {
     // STEP 1:
     promise.then( function(urls_titles) {
 
-        var urls = urls_titles['urls'];
-        var titles = urls_titles['titles'];
-
         //Debug
         //console.log(urls);
         //console.log(titles);
 
-        urls = urls.sort(); // Sort urls before processing.
-        titles = titles.reverse(); // Reverse titles to match sorted urls.
+        var urls = urls_titles['urls'].sort(); // Sort urls before processing.
+        var titles = urls_titles['titles'].reverse(); // Reverse titles to match sorted urls.
 
         var promises = [];
 
@@ -342,9 +417,11 @@ function getMangaJson(manga_url, callback) {
             console.log('Mangafox Object:');
             console.log(mangafox);
 
-
             if (dry) {
                 console.log('Dry run. JSON not saved');
+                console.timeEnd('download json' + manga_url);
+                console.log('\n\n');
+                callback(true);
             } else {
                 // Save file.
                 ms.saveMangaAsJson(mangafox, dir, function(done) {
@@ -369,22 +446,20 @@ function getMangaJson(manga_url, callback) {
  * @param callback
  */
 function updateMangaJson(json_file, opts, callback) {
-    console.log('Updating ' + manga_url + ' JSON...');
+    // Defaults
     var dry = false;
-    if (opts['dry']) var dry = opts['dry'];
+    if (opts.dry) dry = opts.dry;
 
     var mfs = new ms.MangaFoxScraper();
     var manga_json = loadJSON(json_file);
     var manga_url = manga_json['manga_url'];
-    var chapter_urls_promise = mfs.getChapterUrlsPromise(manga_json['manga_url']);
-
-    console.time('update json' + manga_url);
+    var chapter_urls_promise = mfs.getChapterUrlsPromise(manga_url);
 
     chapter_urls_promise.then( function(titles_chapter_urls) {
-        var manga_name = json_file['manga_name'];
+        var manga_name = manga_json['manga_name'];
         var old_chapters_urls = manga_json['chapter_urls'].sort();
         var new_chapters_urls = titles_chapter_urls['urls'].sort(); // caseInsensitive to true.
-        var titles = titles_chapter_urls['titles'];
+        var titles = titles_chapter_urls['titles'].reverse();
         var new_titles = [];
         var promises = [];
         // Update chapter_urls
@@ -396,6 +471,7 @@ function updateMangaJson(json_file, opts, callback) {
             var message = 'No chapters to update for ' + json_file ;
             throw new NoChaptersToUpdateException(message, [json_file]);
         }
+
         manga_json['chapter_urls'] = new_chapters_urls;
 
         if (titles.length != new_chapters_urls.length) {
@@ -410,6 +486,7 @@ function updateMangaJson(json_file, opts, callback) {
         for (i = 0; i < update_chapters.length; i++) {
             new_titles.push(title_url[update_chapters[i]]);
         }
+
         // Debug
         //console.log(old_chapters_urls);
         //console.log(new_chapters_urls);
@@ -420,6 +497,12 @@ function updateMangaJson(json_file, opts, callback) {
         update_chapters.forEach(function(url) {
             promises.push(mfs.getPageNumbersPromise(url));
         });
+
+        console.log('Updating ' + manga_url + ' JSON...');
+        console.time('update json' + manga_url);
+
+        console.log('Before: ');
+        console.log(manga_json);
 
         return Promise.all(promises).then( function(page_numbers) {
             var chapter_page_urls = [];
@@ -584,13 +667,14 @@ function updateMangaJson(json_file, opts, callback) {
             }
 
             // Debug.
-            console.log('manga_json: ');
+            console.log('After: ');
             console.log(manga_json);
 
 
             // Save file.
             if (dry) {
                 console.log('Dry run. JSON not saved');
+                callback(true);
             } else {
                 saveFileSync(json_file, manga_json);
                 console.timeEnd('update json' + manga_url);
@@ -602,8 +686,9 @@ function updateMangaJson(json_file, opts, callback) {
 
     })
     .catch(function (err) {
-        console.log(err.message);
         console.log(err);
+        console.log(err.message + '\n\n');
+        callback(false);
     });
 
     function loadJSON(json_file) {
@@ -632,7 +717,6 @@ function updateMangaJson(json_file, opts, callback) {
         try {
             // Debug
             console.log('Saving JSON file... ' + file_name);
-            console.log(data);
             jsonfile.writeFileSync(file_name, data);
 
         }
