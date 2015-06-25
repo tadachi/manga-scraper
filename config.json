@@ -4,5 +4,6 @@
     "overwrite": false,
     "json_directory": "manga_json",
     "manga_directory": "manga",
-    "manga_list_file": "manga.txt"
+    "manga_list_file": "manga.txt",
+    "timeout": 5000
 }

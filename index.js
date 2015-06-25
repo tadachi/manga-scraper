@@ -1,5 +1,5 @@
 // Debug in chrome. Disable in production.
-var nomo = require('node-monkey').start();
+//var nomo = require('node-monkey').start();
 
 var ms = require('./lib/manga-scraper.js');
 var md = require('./lib/manga-downloader.js');
@@ -18,16 +18,16 @@ var async = require('async');
 /*
  * Defaults
  */
-//var opts = mf.readJsonConfigFile('config.json');
-var opts = {
-    'dry': false, // When downloading singular, do not download anything, not even JSON.
-    'JSON_only': false, // When batch processing, only download the json, do not download images.
-    'overwrite': false, // Overwrite images. Even if they exist.
-    'json_directory': 'manga_json',
-    'manga_directory': 'manga',
-    'manga_list_file': 'manga.txt',
-    'timeout': 10000 // ms
-};
+var opts = mf.readJsonConfigFile('config.json');
+//var opts = {
+//    'dry': false, // When downloading singular, do not download anything, not even JSON.
+//    'JSON_only': false, // When batch processing, only download the json, do not download images.
+//    'overwrite': false, // Overwrite images. Even if they exist.
+//    'json_directory': 'manga_json',
+//    'manga_directory': 'manga',
+//    'manga_list_file': 'manga.txt',
+//    'timeout': 5000 // ms
+//};
 //var opts = {
 //    'dry': true, // When downloading singular, do not download anything, not even JSON.
 //    'JSON_only': false, // When batch processing, only download the json, do not download images.
@@ -43,7 +43,7 @@ var opts = {
  * commander.js stub
  */
 //program
-//    .version('0.0.1')
+//    .version('0.1.0')
 //    .option('-f, --manga_list_file <file>', 'line feed separated list of manga to download.')
 //    .parse(process.argv);
 //
@@ -491,7 +491,9 @@ function updateMangaJson(json_file, opts, callback) {
         //console.log(old_chapters_urls);
         //console.log(new_chapters_urls);
         //console.log(titles);
-        //console.log(new_titles);
+        console.log('New: ');
+        console.log(update_chapters);
+        console.log(new_titles);
         //console.log(manga_json);
 
         update_chapters.forEach(function(url) {
