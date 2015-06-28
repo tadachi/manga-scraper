@@ -1,10 +1,12 @@
 {
-    "dry": true,
+    "dry": false,
     "JSON_only": false,
     "overwrite": false,
     "json_directory": "manga_json",
     "manga_directory": "manga",
     "manga_list_file": "manga.txt",
     "timeout": 5000,
-    "promise_delay": 1000
+    "promise_delay": 1000,
+    "parallel": true,
+    "parallel_limit": 5
 }

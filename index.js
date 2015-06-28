@@ -22,16 +22,9 @@ var opts = manga_file.readJsonConfigFile('config.json');
 //    'json_directory': 'manga_json',
 //    'manga_directory': 'manga',
 //    'manga_list_file': 'manga.txt',
-//    'timeout': 5000 // manga_scraper
-//};
-//var opts = {
-//    'dry': true, // When downloading singular, do not download anything, not even JSON.
-//    'JSON_only': false, // When batch processing, only download the json, do not download images.
-//    'overwrite': false, // Overwrite images. Even if they exist.
-//    'json_directory': 'tests/test_manga_json',
-//    'manga_directory': 'manga',
-//    'manga_list_file': 'test_manga.txt'
-//    'timeout': 5000 // manga_scraper
+//    'timeout': 5000, // manga_scraper
+//    'parallel': true,
+//    'parallel_limit': 5
 //};
 
 /*
@@ -59,7 +52,7 @@ console.log(program);
 /*
  Scraper
  */
-var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // 2 chapters Works.;
+//var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // 2 chapters Works.;
 //var manga_url = 'http://mangafox.me/manga/owari_no_seraph/';
 //var manga_url = 'http://mangafox.me/manga/shingeki_no_kyojin/';
 //var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
@@ -69,12 +62,12 @@ var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // 2 chapters Works.;
 //var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
-//var manga_url = 'http://mangafox.me/manga/fairy_tail/'; // 400+ chapters.
+var manga_url = 'http://mangafox.me/manga/fairy_tail/'; // 400+ chapters.
 //var manga_url = 'http://mangafox.me/manga/hack_link/'; // 18 chapters.
 
-//manga_script.getMangaJson(manga_url, opts, function(done) {
-//    console.log(done);
-//});
+manga_script.getMangaJson(manga_url, opts, function(done) {
+    console.log(done);
+});
 
 /*
  Download
@@ -94,13 +87,13 @@ var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // 2 chapters Works.;
  Update
  */
 //var json_file = 'tests/test_naruto_gaiden_the_seventh_hokage_old.json';
-var json_file = 'tests/test_manga_json/test_owari_no_seraph.json';
+//var json_file = 'tests/test_manga_json/test_owari_no_seraph.json';
 //var json_file = 'manga_json/naruto_gaiden_the_seventh_hokage.json';
 //var json_file = 'manga_json/owari_no_seraph.json';
 
-manga_script.updateMangaJson(json_file, opts, function(done) {
-    console.log(done);
-});
+//manga_script.updateMangaJson(json_file, opts, function(done) {
+//    console.log(done);
+//});
 
 
 /*
