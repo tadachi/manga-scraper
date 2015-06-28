@@ -1,5 +1,5 @@
 {
-    "dry": false,
+    "dry": true,
     "JSON_only": false,
     "overwrite": false,
     "json_directory": "manga_json",
