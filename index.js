@@ -62,12 +62,12 @@ console.log(program);
 //var manga_url = 'http://mangafox.me/manga/naruto_gaiden_the_seventh_hokage/';
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
-var manga_url = 'http://mangafox.me/manga/fairy_tail/'; // 400+ chapters.
+//var manga_url = 'http://mangafox.me/manga/fairy_tail/'; // 400+ chapters.
 //var manga_url = 'http://mangafox.me/manga/hack_link/'; // 18 chapters.
 
-manga_script.getMangaJson(manga_url, opts, function(done) {
-    console.log(done);
-});
+//manga_script.getMangaJson(manga_url, opts, function(done) {
+//    console.log(done);
+//});
 
 /*
  Download
@@ -95,6 +95,15 @@ manga_script.getMangaJson(manga_url, opts, function(done) {
 //    console.log(done);
 //});
 
+/*
+ Build Index
+ */
+//var json_file = 'manga_json/another_world_it_exists.json';
+var json_file = 'manga_json/owari_no_seraph.json';
+
+manga_script.getMangaIndexJson(json_file, opts, function(done) {
+    console.log(done);
+});
 
 /*
  Batch scrape, download, update
