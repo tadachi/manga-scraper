@@ -3,6 +3,7 @@ var nomo = require('node-monkey').start();
 
 var manga_script = require('./lib/manga-script.js');
 var manga_file = require('./lib/manga-file.js');
+var manga_downloader = require('./lib/manga-downloader.js');
 
 // package.json
 var pjson = require('./package.json');
@@ -55,7 +56,7 @@ console.log(program);
 //var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // 2 chapters Works.;
 //var manga_url = 'http://mangafox.me/manga/owari_no_seraph/';
 //var manga_url = 'http://mangafox.me/manga/shingeki_no_kyojin/';
-//var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
+var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
 //var manga_url = 'http://mangafox.me/manga/asu_no_yoichi/';
 //var manga_url = 'http://mangafox.me/manga/ichiban_ushiro_no_daimaou/';
 //var manga_url = 'http://mangafox.me/manga/liar_game/';
@@ -76,12 +77,15 @@ console.log(program);
 
 //var manga_json = 'manga_json/owari_no_seraph.json';
 //var manga_json = 'manga_json/sidonia_no_kishi.json';
+var manga_json = 'manga_json/ichiban_ushiro_no_daimaou.json';
 //var manga_json = 'manga_json/macchi_shoujo.json';
+//var manga_json = 'manga_json/tokyo_ghoul_re.json';
 //var manga_json = 'manga_json/another_world_it_exists.json';
 //var manga_json = 'tests/test_manga_json/test_owari_no_seraph.json';
-//manga_downloader.downloadManga(manga_json, function(done) {
-//    console.log(done);
-//});
+
+manga_downloader.downloadManga(manga_json, opts, function(done) {
+    console.log(done);
+});
 
 /*
  Update
@@ -101,13 +105,13 @@ console.log(program);
 //var json_file = 'manga_json/another_world_it_exists.json';
 //var json_file = 'manga_json/owari_no_seraph.json';
 
-manga_script.getMangaIndexJson(json_file, opts, function(done) {
-    console.log(done + '\n\n');
-});
-
-manga_script.getMangaIndexJsonList(opts, function(done) {
-    console.log(done+ '\n\n');
-});
+//manga_script.getMangaIndexJson(json_file, opts, function(done) {
+//    console.log(done + '\n\n');
+//});
+//
+//manga_script.getMangaIndexJsonList(opts, function(done) {
+//    console.log(done+ '\n\n');
+//});
 
 
 /*
