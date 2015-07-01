@@ -4,6 +4,7 @@
     "overwrite": false,
     "json_directory": "manga_json",
     "manga_directory": "manga",
+    "manga_index_directory": "manga_index",
     "manga_list_file": "manga.txt",
     "timeout": 5000,
     "promise_delay": 1000,

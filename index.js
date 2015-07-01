@@ -99,11 +99,16 @@ console.log(program);
  Build Index
  */
 //var json_file = 'manga_json/another_world_it_exists.json';
-var json_file = 'manga_json/owari_no_seraph.json';
+//var json_file = 'manga_json/owari_no_seraph.json';
 
 manga_script.getMangaIndexJson(json_file, opts, function(done) {
-    console.log(done);
+    console.log(done + '\n\n');
 });
+
+manga_script.getMangaIndexJsonList(opts, function(done) {
+    console.log(done+ '\n\n');
+});
+
 
 /*
  Batch scrape, download, update
