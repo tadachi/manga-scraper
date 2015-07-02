@@ -116,7 +116,6 @@ manga_script.getMangaIndexJsonList(opts, function(done) {
     console.log(done+ '\n\n');
 });
 
-
 /*
  Batch scrape, download, update, build index
  */
