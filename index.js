@@ -77,15 +77,15 @@ var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
 
 //var manga_json = 'manga_json/owari_no_seraph.json';
 //var manga_json = 'manga_json/sidonia_no_kishi.json';
-var manga_json = 'manga_json/ichiban_ushiro_no_daimaou.json';
+//var manga_json = 'manga_json/ichiban_ushiro_no_daimaou.json';
 //var manga_json = 'manga_json/macchi_shoujo.json';
 //var manga_json = 'manga_json/tokyo_ghoul_re.json';
 //var manga_json = 'manga_json/another_world_it_exists.json';
 //var manga_json = 'tests/test_manga_json/test_owari_no_seraph.json';
 
-manga_downloader.downloadManga(manga_json, opts, function(done) {
-    console.log(done);
-});
+//manga_downloader.downloadManga(manga_json, opts, function(done) {
+//    console.log(done);
+//});
 
 /*
  Update
@@ -104,24 +104,27 @@ manga_downloader.downloadManga(manga_json, opts, function(done) {
  */
 //var json_file = 'manga_json/another_world_it_exists.json';
 //var json_file = 'manga_json/owari_no_seraph.json';
+//var json_file = 'manga_json/ichiban_ushiro_no_daimaou.json';
+//var json_file = 'manga_json/sidonia_no_kishi.json';
+
 
 //manga_script.getMangaIndexJson(json_file, opts, function(done) {
 //    console.log(done + '\n\n');
 //});
-//
-//manga_script.getMangaIndexJsonList(opts, function(done) {
-//    console.log(done+ '\n\n');
-//});
+
+manga_script.getMangaIndexJsonList(opts, function(done) {
+    console.log(done+ '\n\n');
+});
 
 
 /*
- Batch scrape, download, update
+ Batch scrape, download, update, build index
  */
-//var manga_list_file = 'tests/test_manga.txt';
-//var manga_list_file = 'manga.txt';
+var manga_list_file = 'manga.txt';
+var manga_json_dir = 'manga_json';
 //var manga_json_dir = 'tests/test_manga_json';
-//var manga_json_dir = 'manga_json';
+//var manga_list_file = 'tests/test_manga.txt';
 
-//getMangaJsonInList(manga_list_file, opts);
-//updateMangaJsonInList(manga_json_dir, opts);
+//manga_script.getMangaJsonInList(manga_list_file, opts);
+//mnaga_script.updateMangaJsonInList(manga_json_dir, opts);
 
