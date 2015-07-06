@@ -2,7 +2,6 @@
   "name": "manga-scraper",
   "description": "Get a json representation of references to manga and manga images from mangafox-like websites' CDNs",
   "main": "server.js",
-  "private": true,
   "version": "0.1.0",
   "dependencies": {
     "express": "^4.13.0",
@@ -23,12 +22,17 @@
   "keywords": [
     "Manga",
     "Scrape",
-    "Scraper"
+    "Scraper",
+    "MangaFox",
+    "Manga Fox"
   ],
+  "preferGlobal": "true",
+  "bin": {
+    "mangascrape" : "index.js"
+  },
   "author": "Takumi Adachi <takumiadachi@gmail.com> (http://www.takbytes.com/)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tadachi/manga-scraper/issues"
   }
-
 }

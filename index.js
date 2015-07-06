@@ -1,5 +1,8 @@
+#! /usr/bin/env node
+// /usr/bin/env node tells node that it should run from here through the commandline.
+
 // Debug in chrome. Disable in production.
-var nomo = require('node-monkey').start();
+//var nomo = require('node-monkey').start();
 
 var manga_script = require('./lib/manga-script.js');
 var manga_scraper = require('./lib/manga-scraper.js');
@@ -35,11 +38,11 @@ var opts = manga_file.readJsonConfigFile('config.json');
 program
     .version('0.1.0')
     .option('-j, --json [http://mangafox.me/manga/naruto/]', 'Download manga json.')
-    .option('-d, --download [manga_json/naruto.json]', 'Download manga json.')
+    .option('-d, --download [manga_json/naruto.json]', 'Download images using manga json made from this app.')
     .option('-u, --update [manga_json/naruto.json]', 'Update manga json file.')
     //.option('-dlist --download-list [manga.txt]', 'Download manga json of manga urls in LF separated file')
     //.option('-ulist --update-list', 'Updates manga json in manga_json folder or config specified json folder')
-    .option('-c, --check', 'Check config.json for errors')
+    //.option('-c, --check', 'Check config.json for errors.')
     .option('-v, --version', 'Get current version of program')
     .parse(process.argv);
 
