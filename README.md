@@ -29,7 +29,7 @@ mangascraper --download http://mangafox.me/manga/sidonia_no_kishi/
 
 
 #### Usage
-
+```
 
 PS C:\Users\tadachi\git\manga-scraper> mangascraper --help
 
