@@ -2,6 +2,7 @@
 var nomo = require('node-monkey').start();
 
 var manga_script = require('./lib/manga-script.js');
+var manga_scraper = require('./lib/manga-scraper.js');
 var manga_file = require('./lib/manga-file.js');
 var manga_downloader = require('./lib/manga-downloader.js');
 
@@ -40,19 +41,28 @@ program
     .parse(process.argv);
 
 if (program['download']) {
+    var mfs = new manga_scraper.MangaFoxScraper();
     var manga_url = program.download;
     console.log(manga_url);
-    //manga_script.getMangaJson(manga_url, opts, function(done) {
-    //
-    //})
+    //mfs.getPageNumbersPromise(manga_url).then(function(page_numbers) {
+    //   console.log(page_numbers);
+    //});
+    manga_script.getMangaJson(manga_url, opts, function(done) {
+        // Done
+    })
 }
 
 
-if (program['update'])
-    console.log('test2');
+if (program['update']) {
+    manga_script.updateMangaJson(json_file, opts, function(done) {
+        console.log(done);
+    });
+}
 
-if (program['version'])
+if (program['version']) {
     console.log(pjson.version);
+}
+
 
 //console.log(program);
 
@@ -70,11 +80,11 @@ if (program['version'])
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 //var manga_url = 'http://mangafox.me/manga/fairy_tail/'; // 400+ chapters.
-var manga_url = 'http://mangafox.me/manga/hack_link/'; // 18 chapters.
-
-manga_script.getMangaJson(manga_url, opts, function(done) {
-    console.log(done);
-});
+//var manga_url = 'http://mangafox.me/manga/hack_link/'; // 18 chapters.
+//
+//manga_script.getMangaJson(manga_url, opts, function(done) {
+//    console.log(done);
+//});
 
 /*
  Download
@@ -85,7 +95,7 @@ manga_script.getMangaJson(manga_url, opts, function(done) {
 //var manga_json = 'manga_json/sidonia_no_kishi.json';
 //var manga_json = 'manga_json/ichiban_ushiro_no_daimaou.json';
 //var manga_json = 'manga_json/macchi_shoujo.json';
-var manga_json = 'manga_json/tokyo_ghoul_re.json';
+//var manga_json = 'manga_json/tokyo_ghoul_re.json';
 //var manga_json = 'manga_json/another_world_it_exists.json';
 //var manga_json = 'tests/test_manga_json/test_owari_no_seraph.json';
 
