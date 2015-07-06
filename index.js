@@ -33,14 +33,20 @@ var opts = manga_file.readJsonConfigFile('config.json');
  */
 program
     .version('0.1.0')
-    .option('-d, --download', 'get line feed separated list of manga to download.')
-    .option('-u, --update', 'Update line feed separated list of manga.')
+    .option('-d, --download [http://mangafox.me/manga/naruto/]', 'get line feed separated list of manga to download.')
+    .option('-u, --update [http://mangafox.me/manga/naruto/]', 'Update line feed separated list of manga.')
     .option('-c, --check', 'Check config.json for errors')
     .option('-v, --version', 'Get current version of program')
     .parse(process.argv);
 
-if (program['download'])
-    console.log('test');
+if (program['download']) {
+    var manga_url = program.download;
+    console.log(manga_url);
+    //manga_script.getMangaJson(manga_url, opts, function(done) {
+    //
+    //})
+}
+
 
 if (program['update'])
     console.log('test2');
@@ -48,7 +54,7 @@ if (program['update'])
 if (program['version'])
     console.log(pjson.version);
 
-console.log(program);
+//console.log(program);
 
 /*
  Scraper
@@ -56,7 +62,7 @@ console.log(program);
 //var manga_url = 'http://mangafox.me/manga/macchi_shoujo/'; // 2 chapters Works.;
 //var manga_url = 'http://mangafox.me/manga/owari_no_seraph/';
 //var manga_url = 'http://mangafox.me/manga/shingeki_no_kyojin/';
-var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
+//var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
 //var manga_url = 'http://mangafox.me/manga/asu_no_yoichi/';
 //var manga_url = 'http://mangafox.me/manga/ichiban_ushiro_no_daimaou/';
 //var manga_url = 'http://mangafox.me/manga/liar_game/';
@@ -64,11 +70,11 @@ var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
 //var manga_url = 'http://mangafox.me/manga/another_world_it_exists/';
 //var manga_url = 'http://mangafox.me/manga/tokyo_ghoul_re/';
 //var manga_url = 'http://mangafox.me/manga/fairy_tail/'; // 400+ chapters.
-//var manga_url = 'http://mangafox.me/manga/hack_link/'; // 18 chapters.
+var manga_url = 'http://mangafox.me/manga/hack_link/'; // 18 chapters.
 
-//manga_script.getMangaJson(manga_url, opts, function(done) {
-//    console.log(done);
-//});
+manga_script.getMangaJson(manga_url, opts, function(done) {
+    console.log(done);
+});
 
 /*
  Download
@@ -79,7 +85,7 @@ var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
 //var manga_json = 'manga_json/sidonia_no_kishi.json';
 //var manga_json = 'manga_json/ichiban_ushiro_no_daimaou.json';
 //var manga_json = 'manga_json/macchi_shoujo.json';
-//var manga_json = 'manga_json/tokyo_ghoul_re.json';
+var manga_json = 'manga_json/tokyo_ghoul_re.json';
 //var manga_json = 'manga_json/another_world_it_exists.json';
 //var manga_json = 'tests/test_manga_json/test_owari_no_seraph.json';
 
@@ -112,9 +118,9 @@ var manga_url = 'http://mangafox.me/manga/sidonia_no_kishi/';
 //    console.log(done + '\n\n');
 //});
 
-manga_script.getMangaIndexJsonList(opts, function(done) {
-    console.log(done+ '\n\n');
-});
+//manga_script.getMangaIndexJsonList(opts, function(done) {
+//    console.log(done+ '\n\n');
+//});
 
 /*
  Batch scrape, download, update, build index
