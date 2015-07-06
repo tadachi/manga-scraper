@@ -1,3 +1,7 @@
 mangafox_json/
 tests/
 node_modules/
+manga/
+manga_index/
+manga_json/
+npm-debug.log
