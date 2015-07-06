@@ -10,23 +10,40 @@ Visit https://www.npmjs.com/package/manga-scraper to see it on npm.
 
 #### Install
 ```
+
 npm install -g manga-scraper
-```config.json
+
+mangascraper -s
+
+
+#### Example Run
+```
+
+mangascraper --json http://mangafox.me/manga/sidonia_no_kishi/
+
+mangascraper --download http://mangafox.me/manga/sidonia_no_kishi/
+
+```
+
 
 #### Usage
 ```
+
 PS C:\Users\tadachi\git\manga-scraper> mangascraper --help
 
-  Usage: index [options]
+ Usage: index [options]
 
-  Options:
+ Options:
 
-    -h, --help                                     output usage information
-    -V, --version                                  output the version number
-    -j, --json [http://mangafox.me/manga/naruto/]  Download manga json.
-    -d, --download [manga_json/naruto.json]        Download images using manga json made from this app.
-    -u, --update [manga_json/naruto.json]          Update manga json file.
-    -v, --version                                  Get current version of program
+   -h, --help                                     output usage information
+   -V, --version                                  output the version number
+   -s, --setup                                    Make folders, make config file, etc using default settings. Overwrite current config
+   -j, --json [http://mangafox.me/manga/naruto/]  Download manga json.
+   -d, --download [manga_json/naruto.json]        Download images using manga json made from this app.
+   -u, --update [manga_json/naruto.json]          Update manga json file.
+   -i, --index [manga_json/naruto.json]           Make index files. e.g: manga_json/naruto_index.json
+   --index_list                                   Make a master index file to be used by an app like https://github.com/tadachi/manga-front
+   -v, --version                                  Get current version of program
 
 ```
 
