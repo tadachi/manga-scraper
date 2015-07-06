@@ -5,9 +5,17 @@
 #### Description
 Get a json representation of references to manga and manga images from mangafox-like websites' CDNs.
 
+#### npm
+Visit https://www.npmjs.com/package/manga-scraper to see it on npm.
+
+#### Install
+```
+npm install -g manga-scraper
+```config.json
+
 #### Usage
 ```
-PS C:\Users\tadachi\git\manga-scraper> node index.js --help
+PS C:\Users\tadachi\git\manga-scraper> mangascraper --help
 
   Usage: index [options]
 

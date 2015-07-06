@@ -19,35 +19,39 @@ var program = require('commander');
  * Defaults
  */
 
-var opts = manga_file.readJsonConfigFile('config.json');
-//var opts = {
-//    'dry': false, // When downloading singular, do not download anything, not even JSON.
-//    'JSON_only': false, // When batch processing, only download the json, do not download images.
-//    'overwrite': false, // Overwrite images. Even if they exist.
-//    'json_directory': 'manga_json',
-//    'manga_directory': 'manga',
-//    'manga_list_file': 'manga.txt',
-//    'timeout': 5000, // manga_scraper
-//    'parallel': true,
-//    'parallel_limit': 5
-//};
+
+
 
 /*
  * commander.js
  */
 program
     .version('0.1.0')
+    .option('-s, --setup', 'Make folders, make config file, etc using default settings. Overwrites current config')
     .option('-j, --json [http://mangafox.me/manga/naruto/]', 'Download manga json.')
     .option('-d, --download [manga_json/naruto.json]', 'Download images using manga json made from this app.')
     .option('-u, --update [manga_json/naruto.json]', 'Update manga json file.')
+    .option('-i, --index [manga_json/naruto.json]', 'Make index files. e.g: manga_json/naruto_index.json')
+    .option('--index_list', 'Make a master index file to be used by an app like https://github.com/tadachi/manga-front')
     //.option('-dlist --download-list [manga.txt]', 'Download manga json of manga urls in LF separated file')
     //.option('-ulist --update-list', 'Updates manga json in manga_json folder or config specified json folder')
-    //.option('-c, --check', 'Check config.json for errors.')
+    //.option('-c, --check', 'Check config.json for errors.')w
     .option('-v, --version', 'Get current version of program')
     .parse(process.argv);
 
+if (program['version']) {
+    console.log(pjson.name + ': ' + pjson.version);
+}
+
+if (program['setup']) {
+    manga_script.setup();
+}
+
+// Begin.
+var opts = manga_file.readJsonConfigFile('config.json');
+
 if (program['json']) {
-    var manga_url = program.download;
+    var manga_url = program.json;
     // Debug
     //console.log(manga_url);
     //var mfs = new manga_scraper.MangaFoxScraper();
@@ -85,9 +89,19 @@ if (program['update']) {
     });
 }
 
-if (program['version']) {
-    console.log(pjson.name + ': ' + pjson.version);
+if (program['index']) {
+    var json_file = program.index;
+    manga_script.getMangaIndexJson(json_file, opts, function(done) {
+        console.log(done + '\n\n');
+    });
 }
+
+if (program['index_list']) {
+    manga_script.getMangaIndexJsonList(opts, function(done) {
+        //Done
+    });
+}
+
 
 // Debug
 //console.log(program);
