@@ -30,20 +30,24 @@ var opts = manga_file.readJsonConfigFile('config.json');
 //};
 
 /*
- * commander.js stub
+ * commander.js
  */
 program
     .version('0.1.0')
-    .option('-d, --download [http://mangafox.me/manga/naruto/]', 'get line feed separated list of manga to download.')
-    .option('-u, --update [http://mangafox.me/manga/naruto/]', 'Update line feed separated list of manga.')
+    .option('-j, --json [http://mangafox.me/manga/naruto/]', 'Download manga json.')
+    .option('-d, --download [manga_json/naruto.json]', 'Download manga json.')
+    .option('-u, --update [manga_json/naruto.json]', 'Update manga json file.')
+    //.option('-dlist --download-list [manga.txt]', 'Download manga json of manga urls in LF separated file')
+    //.option('-ulist --update-list', 'Updates manga json in manga_json folder or config specified json folder')
     .option('-c, --check', 'Check config.json for errors')
     .option('-v, --version', 'Get current version of program')
     .parse(process.argv);
 
-if (program['download']) {
-    var mfs = new manga_scraper.MangaFoxScraper();
+if (program['json']) {
     var manga_url = program.download;
-    console.log(manga_url);
+    // Debug
+    //console.log(manga_url);
+    //var mfs = new manga_scraper.MangaFoxScraper();
     //mfs.getPageNumbersPromise(manga_url).then(function(page_numbers) {
     //   console.log(page_numbers);
     //});
@@ -52,18 +56,37 @@ if (program['download']) {
     })
 }
 
-
-if (program['update']) {
-    manga_script.updateMangaJson(json_file, opts, function(done) {
+if (program['download']) {
+    var json_file = program.download;
+    // Debug
+    //console.log(manga_url);
+    //var mfs = new manga_scraper.MangaFoxScraper();
+    //mfs.getPageNumbersPromise(manga_url).then(function(page_numbers) {
+    //   console.log(page_numbers);
+    //});
+    manga_downloader.downloadManga(json_file, opts, function(done) {
         console.log(done);
     });
 }
 
-if (program['version']) {
-    console.log(pjson.version);
+if (program['update']) {
+    var json_file = program.update;
+    // Debug
+    //var mfs = new manga_scraper.MangaFoxScraper();
+    //var opts = {};
+    //mfs.getImageUrl(json_file, opts, function(image_url) {
+    //   console.log(image_url);
+    //});
+    manga_script.updateMangaJson(json_file, opts, function(done) {
+        //done
+    });
 }
 
+if (program['version']) {
+    console.log(pjson.name + ': ' + pjson.version);
+}
 
+// Debug
 //console.log(program);
 
 /*
@@ -135,8 +158,8 @@ if (program['version']) {
 /*
  Batch scrape, download, update, build index
  */
-var manga_list_file = 'manga.txt';
-var manga_json_dir = 'manga_json';
+//var manga_list_file = 'manga.txt';
+//var manga_json_dir = 'manga_json';
 //var manga_json_dir = 'tests/test_manga_json';
 //var manga_list_file = 'tests/test_manga.txt';
 
