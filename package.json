@@ -1,8 +1,7 @@
 {
   "name": "manga-scraper",
   "description": "Get a json representation of references to manga and manga images from mangafox-like websites' CDNs",
-  "main": "server.js",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "dependencies": {
     "express": "^4.13.0",
     "commander": "2.8.1",
@@ -15,7 +14,7 @@
     "bluebird": "^2.9.27",
     "jsonfile": "^2.0.1"
   },
-  "respository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/tadachi/manga-scraper"
   },
