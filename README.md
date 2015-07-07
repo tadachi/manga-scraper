@@ -15,7 +15,6 @@ npm install -g manga-scraper
 
 mangascraper -s
 
-
 ```
 
 #### Example Run
