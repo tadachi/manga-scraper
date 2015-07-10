@@ -2,7 +2,7 @@
 // /usr/bin/env node tells node that it should run from here through the commandline.
 
 // Debug in chrome. Disable in production.
-//var nomo = require('node-monkey').start();
+var nomo = require('node-monkey').start();
 
 var manga_script = require('./lib/manga-script.js');
 var manga_scraper = require('./lib/manga-scraper.js');
@@ -26,13 +26,15 @@ var program = require('commander');
  * commander.js
  */
 program
-    .version('0.1.0')
+    .version(pjson.version)
     .option('-s, --setup', 'Make folders, make config file, etc using default settings. Overwrites current config')
     .option('-j, --json [http://mangafox.me/manga/naruto/]', 'Download manga json.')
     .option('-d, --download [manga_json/naruto.json]', 'Download images using manga json made from this app.')
     .option('-u, --update [manga_json/naruto.json]', 'Update manga json file.')
     .option('-i, --index [manga_json/naruto.json]', 'Make index files. e.g: manga_json/naruto_index.json')
     .option('--index_list', 'Make a master index file to be used by an app like https://github.com/tadachi/manga-front')
+    //.option('--index_batch', 'Make index json for all mangas in manga_json directory')
+    .option('--json_batch', 'Download manga json for all mangas in manga.txt file.')
     //.option('-dlist --download-list [manga.txt]', 'Download manga json of manga urls in LF separated file')
     //.option('-ulist --update-list', 'Updates manga json in manga_json folder or config specified json folder')
     //.option('-c, --check', 'Check config.json for errors.')w
@@ -98,6 +100,12 @@ if (program['index']) {
 
 if (program['index_list']) {
     manga_script.getMangaIndexJsonList(opts, function(done) {
+        //Done
+    });
+}
+
+if (program['json_batch']) {
+    manga_script.getMangaJsonInList('manga.txt', opts, function(done) {
         //Done
     });
 }
