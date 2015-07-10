@@ -33,7 +33,7 @@ program
     .option('-u, --update [manga_json/naruto.json]', 'Update manga json file.')
     .option('-i, --index [manga_json/naruto.json]', 'Make index files. e.g: manga_json/naruto_index.json')
     .option('--index_list', 'Make a master index file to be used by an app like https://github.com/tadachi/manga-front')
-    //.option('--index_batch', 'Make index json for all mangas in manga_json directory')
+    .option('--index_batch', 'Make index json for all mangas in manga_json directory')
     .option('--json_batch', 'Download manga json for all mangas in manga.txt file.')
     //.option('-dlist --download-list [manga.txt]', 'Download manga json of manga urls in LF separated file')
     //.option('-ulist --update-list', 'Updates manga json in manga_json folder or config specified json folder')
@@ -61,6 +61,7 @@ if (program['json']) {
     //   console.log(page_numbers);
     //});
     manga_script.getMangaJson(manga_url, opts, function(done) {
+        console.log(done);
         // Done
     })
 }
@@ -110,6 +111,11 @@ if (program['json_batch']) {
     });
 }
 
+if (program['index_batch']) {
+    manga_script.getIndexesForAllMangaJson(opts, function(done) {
+        //Done
+    });
+}
 
 // Debug
 //console.log(program);
