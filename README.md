@@ -2,6 +2,16 @@
 
 ###Manga-Scraper
 
+#### Updates
+It has come to my attention most, if not all of the manga on MangaFox is licensed in the US and is not available.
+
+I encountered this when I ran Manga-Scraper on my server situated in the U.S.
+
+Since it scrapes actual pages for content, it will fail if it encounters a 'It's Licensed' page.
+
+I apologize to any people having these problems. I will try to address these eventually by finding another manga hosting website to scrape.
+
+
 #### Description
 Get a json representation of references to manga and manga images from mangafox-like websites' CDNs.
 
@@ -26,7 +36,7 @@ mangascraper -s
 
 mangascraper --json http://mangafox.me/manga/sidonia_no_kishi/
 
-mangascraper --download http://mangafox.me/manga/sidonia_no_kishi/
+mangascraper --download manga_json/sidonia_no_kishi
 
 ```
 
