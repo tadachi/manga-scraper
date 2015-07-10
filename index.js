@@ -35,7 +35,7 @@ program
     .option('--index_list', 'Make a master index file to be used by an app like https://github.com/tadachi/manga-front')
     .option('--index_batch', 'Make index json for all mangas in manga_json directory')
     .option('--json_batch', 'Download manga json for all mangas in manga.txt file.')
-    .option('--download-batch', 'Download manga images from manga json.')
+    .option('--download_batch', 'Download manga images from manga json.')
     //.option('-ulist --update-list', 'Updates manga json in manga_json folder or config specified json folder')
     //.option('-c, --check', 'Check config.json for errors.')w
     .option('-v, --version', 'Get current version of program')
@@ -112,15 +112,11 @@ if (program['json_batch']) {
 }
 
 if (program['index_batch']) {
-    manga_script.getIndexesForAllMangaJson(opts, function(done) {
-        //Done
-    });
+    manga_script.getIndexesForAllMangaJson(opts);
 }
 
 if (program['download_batch']) {
-    manga_script.downloadImagesForAllManga(opts, function(done) {
-        //Done
-    });
+    manga_script.downloadImagesForAllManga(opts);
 }
 
 // Debug
