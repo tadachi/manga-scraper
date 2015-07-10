@@ -27,17 +27,16 @@ var program = require('commander');
  */
 program
     .version(pjson.version)
-    .option('-s, --setup', 'Make folders, make config file, etc using default settings. Overwrites current config')
+    .option('-s, --setup', 'Make folders, config file with defaults. Make backups before using.')
     .option('-j, --json [http://mangafox.me/manga/naruto/]', 'Download manga json.')
     .option('-d, --download [manga_json/naruto.json]', 'Download images using manga json made from this app.')
     .option('-u, --update [manga_json/naruto.json]', 'Update manga json file.')
     .option('-i, --index [manga_json/naruto.json]', 'Make index files. e.g: manga_json/naruto_index.json')
-    .option('--index_list', 'Make a master index file to be used by an app like https://github.com/tadachi/manga-front')
+    .option('--index_list', 'Make a master index file (See https://github.com/tadachi/manga-front)')
     .option('--index_batch', 'Make index json for all mangas in manga_json directory')
     .option('--json_batch', 'Download manga json for all mangas in manga.txt file.')
     .option('--download_batch', 'Download manga images from manga json.')
-    //.option('-ulist --update-list', 'Updates manga json in manga_json folder or config specified json folder')
-    //.option('-c, --check', 'Check config.json for errors.')w
+    //.option('-c, --check', 'Check config.json for errors.')
     .option('-v, --version', 'Get current version of program')
     .parse(process.argv);
 
